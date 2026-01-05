@@ -1,0 +1,5 @@
+.DS_STORE
+.vscode/
+.env
+lib/
+wm_store_data/
