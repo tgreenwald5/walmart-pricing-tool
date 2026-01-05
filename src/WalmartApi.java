@@ -3,6 +3,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class WalmartApi {
 
-    public static JsonNode getItemsByStoreId(String[] itemIds, String storeId) throws Exception {
+    public static JsonNode getItemsByStoreId(ArrayList<String> itemIds, String storeId) throws Exception {
 
         // id and keys
         String consumerId = System.getenv("WM_CONSUMER_ID");
@@ -19,17 +20,17 @@ public class WalmartApi {
         String privateKey = System.getenv("WM_PRIVATE_KEY");
         
         String url = "";
-        if (itemIds.length == 1) {
+        if (itemIds.size() == 1) {
             url =
                 "https://developer.api.walmart.com/api-proxy/service/affil/product/v2/items/" +
-                itemIds[0] +
+                itemIds.get(0) +
                 "?storeId=" + storeId;
         } else {
             String itemIdsStr = "";
-            for (int i = 0; i < itemIds.length - 1; i++) {
-                itemIdsStr += (itemIds[i] + ",");
+            for (int i = 0; i < itemIds.size() - 1; i++) {
+                itemIdsStr += (itemIds.get(i) + ",");
             }
-            itemIdsStr += itemIds[itemIds.length - 1];
+            itemIdsStr += itemIds.get(itemIds.size() - 1);
 
             url = "https://developer.api.walmart.com/api-proxy/service/affil/product/v2/items?" +
                 "ids=" + itemIdsStr +

@@ -14,7 +14,9 @@ public class HandleData {
             System.out.println(storeIds.get(i));
         }
 
-        String[] itemIds = {"10450114", "44390944"}; // milk, tomato "44390944"
+        ArrayList<String> itemIds = new ArrayList<>();
+        itemIds.add("10450114");
+        itemIds.add("44390944");
         for (int i = 0; i < storeIds.size(); i++) {
             JsonNode itemsInfo = WalmartApi.getItemsByStoreId(itemIds, storeIds.get(i)); // get items prices
             if (itemsInfo == null) {
