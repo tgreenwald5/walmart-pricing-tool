@@ -3,3 +3,4 @@
 .env
 lib/
 wm_store_data/
+wm_store_prices.db
