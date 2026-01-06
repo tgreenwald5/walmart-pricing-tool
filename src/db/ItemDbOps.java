@@ -3,6 +3,7 @@ package src.db;
 import src.model.Item;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class ItemDbOps {
     
@@ -34,5 +35,40 @@ public class ItemDbOps {
                 conn.close();
             }
         }
+    }
+
+    public static ArrayList<Item> getAllItems() throws Exception {
+        ArrayList<Item> items = new ArrayList<>();
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql = "SELECT * FROM items";
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Item item = new Item(
+                    rs.getLong("id"),
+                    rs.getString("name"),
+                    rs.getString("brand"),
+                    rs.getString("category")
+                );
+                items.add(item);
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+        return items;
     }
 }
