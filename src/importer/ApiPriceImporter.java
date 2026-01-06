@@ -16,13 +16,14 @@ public class ApiPriceImporter {
         pricesMap = WalmartApi.fetchItemPrices(itemIds, storeId);
         long observedAt = Instant.now().getEpochSecond();
 
-        for (Map.Entry<Long, Integer> entry : pricesMap.entrySet()) {
-            long itemId = entry.getKey();
-            int itemPriceCents = entry.getValue();
-            Price price = new Price(storeId, itemId, itemPriceCents, observedAt);
-            prices.add(price);
+        for (Long itemId : itemIds) {
+            Integer itemPriceCents = pricesMap.get(itemId);
+            if (itemPriceCents != null) {
+                Price price = new Price(storeId, itemId, itemPriceCents, observedAt);
+                prices.add(price);
+            }
         }
-
+        
         return prices;
     }
 }
