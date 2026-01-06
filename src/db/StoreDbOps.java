@@ -3,6 +3,7 @@ package src.db;
 import src.model.Store;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class StoreDbOps {
     
@@ -39,4 +40,41 @@ public class StoreDbOps {
         }
     }
 
+    public static void insertStores(ArrayList<Store> stores) throws Exception {
+        for (Store store : stores) {
+            insertStore(store);
+        }
+    }
+
+    public static Store getStoreById(int storeId) throws Exception {
+        String sql = 
+                "SELECT id, region, state, county, city, lat, lon " +
+                "FROM stores " +
+                "WHERE id = ?";
+        
+        
+        try (Connection conn = Database.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, storeId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                if (!rs.next()) {
+                    return null;
+                }
+
+                return new Store(
+                    rs.getInt("id"),
+                    rs.getString("region"),
+                    rs.getString("state"),
+                    rs.getString("county"),
+                    rs.getString("city"),
+                    rs.getDouble("lat"),
+                    rs.getDouble("lon")
+                );
+            }
+        }
+    }
+              
 }
