@@ -13,8 +13,10 @@ public class PriceDbOps {
             conn = Database.getConnection();
             String sql = 
                     "INSERT INTO prices (store_id, item_id, price_cents, observed_date) " +
-                    "VALUES (?, ?, ?, ?)";
-            
+                    "VALUES (?, ?, ?, ?) " + 
+                    "ON CONFLICT(store_id, item_id, observed_date) " + // if specific item price in specific store on specific day alrdy exists
+                    "DO UPDATE SET price_cents = excluded.price_cents"; // update row instead of adding new
+                    
             ps = conn.prepareStatement(sql);
             
             ps.setInt(1, price.storeId);
