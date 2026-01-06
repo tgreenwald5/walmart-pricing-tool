@@ -12,16 +12,15 @@ public class PriceDbOps {
         try {
             conn = Database.getConnection();
             String sql = 
-                    "INSERT INTO prices (price_id, store_id, item_id, price_cents, observed_at) " +
-                    "VALUES (?, ?, ?, ?, ?)";
+                    "INSERT INTO prices (store_id, item_id, price_cents, observed_at) " +
+                    "VALUES (?, ?, ?, ?)";
             
             ps = conn.prepareStatement(sql);
             
-            ps.setLong(1, price.priceId);
-            ps.setInt(2, price.storeId);
-            ps.setLong(3, price.itemId);
-            ps.setInt(4, price.priceCents);
-            ps.setLong(5, price.observedAt);
+            ps.setInt(1, price.storeId);
+            ps.setLong(2, price.itemId);
+            ps.setInt(3, price.priceCents);
+            ps.setLong(4, price.observedAt);
 
             ps.executeUpdate();
             System.out.println("PRICE INSERTED");
