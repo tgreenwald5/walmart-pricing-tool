@@ -5,7 +5,7 @@ import src.model.Price;
 import java.sql.*;
 
 public class PriceDbOps {
-    public static void insertStore(Price price) throws Exception {
+    public static void insertPrice(Price price) throws Exception {
         Connection conn = null;
         PreparedStatement ps = null;
 
