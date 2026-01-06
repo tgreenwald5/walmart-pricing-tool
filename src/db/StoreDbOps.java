@@ -40,12 +40,7 @@ public class StoreDbOps {
         }
     }
 
-    public static void insertStores(ArrayList<Store> stores) throws Exception {
-        for (Store store : stores) {
-            insertStore(store);
-        }
-    }
-
+    
     public static Store getStoreById(int storeId) throws Exception {
         Connection conn = null;
         PreparedStatement ps = null;

@@ -1,5 +1,7 @@
 package src.importer;
 
+import src.db.*;
+
 import src.model.Store;
 
 import java.util.ArrayList;
@@ -31,5 +33,13 @@ public class StoreCsvImporter {
         reader.close();
 
         return stores;
+    }
+
+    public static void importStores(String storesCsvPath) throws Exception {
+        ArrayList<Store> stores = new ArrayList<>();
+        stores = buildStores(storesCsvPath);
+        for (Store store : stores) {
+            StoreDbOps.insertStore(store);
+        }
     }
 }
