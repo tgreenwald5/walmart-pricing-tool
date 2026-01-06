@@ -12,7 +12,7 @@ public class PriceDbOps {
         try {
             conn = Database.getConnection();
             String sql = 
-                    "INSERT INTO prices (store_id, item_id, price_cents, observed_at) " +
+                    "INSERT INTO prices (store_id, item_id, price_cents, observed_date) " +
                     "VALUES (?, ?, ?, ?)";
             
             ps = conn.prepareStatement(sql);
@@ -20,7 +20,7 @@ public class PriceDbOps {
             ps.setInt(1, price.storeId);
             ps.setLong(2, price.itemId);
             ps.setInt(3, price.priceCents);
-            ps.setLong(4, price.observedAt);
+            ps.setString(4, price.observedDate.toString());
 
             ps.executeUpdate();
             System.out.println("PRICE INSERTED");

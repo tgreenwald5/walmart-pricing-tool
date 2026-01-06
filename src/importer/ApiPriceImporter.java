@@ -6,7 +6,7 @@ import src.api.WalmartApi;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.time.Instant;
+import java.time.LocalDate;
 
 public class ApiPriceImporter {
     public static ArrayList<Price> buildPrices(ArrayList<Long> itemIds, int storeId) throws Exception {
@@ -14,12 +14,12 @@ public class ApiPriceImporter {
 
         Map<Long, Integer> pricesMap = new HashMap<>();
         pricesMap = WalmartApi.fetchItemPrices(itemIds, storeId);
-        long observedAt = Instant.now().getEpochSecond();
+        LocalDate observedDate = LocalDate.now();
 
         for (Long itemId : itemIds) {
             Integer itemPriceCents = pricesMap.get(itemId);
             if (itemPriceCents != null) {
-                Price price = new Price(storeId, itemId, itemPriceCents, observedAt);
+                Price price = new Price(storeId, itemId, itemPriceCents, observedDate);
                 prices.add(price);
             }
         }
