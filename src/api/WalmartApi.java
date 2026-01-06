@@ -69,7 +69,7 @@ public class WalmartApi {
         
         // get structured json data
         if (response.statusCode() != 200) { // store id doesnt exist anymore or smth else wrong
-            return null;
+            throw new RuntimeException("ERROR: status code = " + response.statusCode() + ", storeId = " + storeId);
         }
 
         String prodInfo = response.body();
