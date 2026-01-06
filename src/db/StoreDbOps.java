@@ -47,24 +47,65 @@ public class StoreDbOps {
     }
 
     public static Store getStoreById(int storeId) throws Exception {
-        String sql = 
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql = 
                 "SELECT id, region, state, county, city, lat, lon " +
                 "FROM stores " +
                 "WHERE id = ?";
-        
-        
-        try (Connection conn = Database.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
 
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, storeId);
 
-            try (ResultSet rs = ps.executeQuery()) {
+            rs = ps.executeQuery();
+            if (!rs.next()) {
+                return null;
+            }
 
-                if (!rs.next()) {
-                    return null;
-                }
+            Store store = new Store(
+            rs.getInt("id"),
+            rs.getString("region"),
+            rs.getString("state"),
+            rs.getString("county"),
+            rs.getString("city"),
+            rs.getDouble("lat"),
+            rs.getDouble("lon")
+            );
 
-                return new Store(
+            return store;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
+
+    public static ArrayList<Store> getAllStores() throws Exception {
+        ArrayList<Store> stores = new ArrayList<>();
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql = "SELECT * FROM stores";
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Store store = new Store(
                     rs.getInt("id"),
                     rs.getString("region"),
                     rs.getString("state"),
@@ -73,8 +114,18 @@ public class StoreDbOps {
                     rs.getDouble("lat"),
                     rs.getDouble("lon")
                 );
+                stores.add(store);
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
             }
         }
+        return stores;
     }
               
 }
