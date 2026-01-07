@@ -37,30 +37,28 @@ public class ApiPriceImporter {
             itemIds.add(item.id);
         }
 
-
-        /*
-        ArrayList<Store> stores = new ArrayList<>();
-        stores = StoreDbOps.getAllStores();
-        ArrayList<Integer> storeIds = new ArrayList<>();
-        for (Store store : stores) {
-            storeIds.add(store.id);
-        }
-        */
-
         // arraylist of all store ids
         ArrayList<Store> stores = new ArrayList<>();
         stores = StoreDbOps.getAllStores();
         ArrayList<Integer> storeIds = new ArrayList<>();
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < stores.size(); i++) { // number of stores processed
             storeIds.add(stores.get(i).id);
         }
 
         for (int i = 0; i < storeIds.size(); i++) { // loop through storeIds
-            ArrayList<Price> prices = buildPrices(itemIds, storeIds.get(i)); // make price object for each item at a single store
-            for (int j = 0; j < prices.size(); j++) { // loop through price objects
-                PriceDbOps.insertPrice(prices.get(j));
+            int storeId = storeIds.get(i);
+
+            try {
+                ArrayList<Price> prices = buildPrices(itemIds, storeIds.get(i)); // make price object for each item at a single store
+                for (int j = 0; j < prices.size(); j++) { // loop through price objects
+                    PriceDbOps.insertPrice(prices.get(j));
+                }
+
+            } catch (RuntimeException e) {
+                System.out.println("API failed at store: " + storeId);
+                continue;
             }
+            
         }
-        
     }
 }
