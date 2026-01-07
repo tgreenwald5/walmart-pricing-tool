@@ -1,8 +1,9 @@
 package src.db;
 
-import src.model.Price;
+import src.model.*;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class PriceDbOps {
     public static void insertPrice(Price price) throws Exception {
@@ -25,7 +26,7 @@ public class PriceDbOps {
             ps.setString(4, price.observedDate.toString());
 
             ps.executeUpdate();
-            System.out.println("PRICE INSERTED");
+            //System.out.println("PRICE INSERTED");
         } finally {
 
             if (ps != null) {
@@ -35,6 +36,42 @@ public class PriceDbOps {
                 conn.close();
             }
         }
+    }
+
+    public static ArrayList<Price> getAllPrices() throws Exception {
+        ArrayList<Price> prices = new ArrayList<>();
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql = "SELECT * FROM prices";
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Price price = new Price(
+                    rs.getLong("price_id"),
+                    rs.getInt("store_id"),
+                    rs.getLong("item_id"),
+                    rs.getInt("price_cents"),
+                    rs.getString("observed_date")
+                );
+                prices.add(price);
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+        return prices;
     }
     
 }
