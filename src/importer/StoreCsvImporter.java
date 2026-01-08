@@ -9,6 +9,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 public class StoreCsvImporter {
+
+    // build Store objects from csv file
     public static ArrayList<Store> buildStores(String storesCsvPath) throws Exception {
         ArrayList<Store> stores = new ArrayList<>();
 
@@ -26,8 +28,9 @@ public class StoreCsvImporter {
             int storeId = Integer.parseInt(cols[6]);
             double storeLat = Double.parseDouble(cols[7]);
             double storeLon = Double.parseDouble(cols[8]);
+            String storeCountyFips = cols[9];
 
-            Store store = new Store(storeId, storeRegion, storeState, storeCounty, storeCity, storeLat, storeLon);
+            Store store = new Store(storeId, storeRegion, storeState, storeCounty, storeCity, storeLat, storeLon, storeCountyFips);
             stores.add(store);
         }
         reader.close();
@@ -35,6 +38,7 @@ public class StoreCsvImporter {
         return stores;
     }
 
+    // add stores to db from csv file
     public static void importStores(String storesCsvPath) throws Exception {
         ArrayList<Store> stores = new ArrayList<>();
         stores = buildStores(storesCsvPath);

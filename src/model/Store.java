@@ -8,8 +8,9 @@ public class Store {
     public String city;
     public double lat;
     public double lon;
+    public String countyFips;
 
-    public Store(int id, String region, String state, String county, String city, double lat, double lon) {
+    public Store(int id, String region, String state, String county, String city, double lat, double lon, String countyFips) {
         this.id = id;
         this.region = region;
         this.state = state;
@@ -17,5 +18,6 @@ public class Store {
         this.city = city;
         this.lat = lat;
         this.lon = lon;
+        this.countyFips = countyFips;
     }
 }

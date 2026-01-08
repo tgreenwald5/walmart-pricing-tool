@@ -109,7 +109,7 @@ public class PriceDbOps {
     }
 
     // get all of the latest prices of a specific item in the US
-    public static ArrayList<Price> getCountryLatestItemPrices(long itemId) throws Exception {
+    public static ArrayList<Price> getLatestCountryItemPrices(long itemId) throws Exception {
         ArrayList<Price> prices = new ArrayList<>();
 
         String latestDate  = getLatestObservedDate();

@@ -14,8 +14,8 @@ public class StoreDbOps {
         try {
             conn = Database.getConnection();
             String sql = 
-                    "INSERT INTO stores (id, region, state, county, city, lat, lon) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    "INSERT INTO stores (id, region, state, county, city, lat, lon, county_fips) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             
             ps = conn.prepareStatement(sql);
             
@@ -26,6 +26,7 @@ public class StoreDbOps {
             ps.setString(5, store.city);
             ps.setDouble(6, store.lat);
             ps.setDouble(7, store.lon);
+            ps.setString(8, store.countyFips);
 
             ps.executeUpdate();
             System.out.println("STORE INSERTED");
@@ -50,7 +51,7 @@ public class StoreDbOps {
             conn = Database.getConnection();
 
             String sql = 
-                "SELECT id, region, state, county, city, lat, lon " +
+                "SELECT id, region, state, county, city, lat, lon, county_fips " +
                 "FROM stores " +
                 "WHERE id = ?";
 
@@ -69,7 +70,8 @@ public class StoreDbOps {
             rs.getString("county"),
             rs.getString("city"),
             rs.getDouble("lat"),
-            rs.getDouble("lon")
+            rs.getDouble("lon"),
+            rs.getString("county_fips")
             );
 
             return store;
@@ -107,7 +109,8 @@ public class StoreDbOps {
                     rs.getString("county"),
                     rs.getString("city"),
                     rs.getDouble("lat"),
-                    rs.getDouble("lon")
+                    rs.getDouble("lon"),
+                    rs.getString("county_fips")
                 );
                 stores.add(store);
             }
