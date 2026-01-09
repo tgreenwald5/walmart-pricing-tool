@@ -36,6 +36,15 @@ public class LatestPriceAnalytics {
         return calcAvgPrice(prices);
     }
 
+    // get the latest average price of a specific item in a specific county
+    public static int getLatestCountyAvgForItem(long id, String countyFips) throws Exception {
+        ArrayList<Price> prices = new ArrayList<>();
+        prices = PriceDbOps.getLatestCountyItemPrices(id, countyFips);
+        return calcAvgPrice(prices);
+    }
+
+    
+
 
 
     

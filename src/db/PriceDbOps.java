@@ -207,4 +207,55 @@ public class PriceDbOps {
 
         return prices;
     }
+
+    // get all of the latest prices of a specific item in a specific county (input county fips)
+    public static ArrayList<Price> getLatestCountyItemPrices(long itemId, String countyFips) throws Exception {
+        ArrayList<Price> prices = new ArrayList<>();
+
+        String latestDate  = getLatestObservedDate();
+        if (latestDate == null) {
+            return prices;
+        }
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql = 
+                    "SELECT p.* FROM prices p " +
+                    "JOIN stores s ON p.store_id = s.id " +
+                    "WHERE p.observed_date = ? AND p.item_id = ? AND s.county_fips = ?";
+            
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, latestDate);
+            ps.setLong(2, itemId);
+            ps.setString(3, countyFips);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Price price = new Price(
+                    rs.getLong("price_id"),
+                    rs.getInt("store_id"),
+                    rs.getLong("item_id"),
+                    rs.getInt("price_cents"),
+                    rs.getString("observed_date")
+                );
+                prices.add(price);
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+
+        return prices;
+    }
 }
