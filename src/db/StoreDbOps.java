@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class StoreDbOps {
     
+    // insert a single store into the db
     public static void insertStore(Store store) throws Exception {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -41,7 +42,7 @@ public class StoreDbOps {
         }
     }
 
-    
+    // return the store object that has the inputted storeId from the db
     public static Store getStoreById(int storeId) throws Exception {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -86,7 +87,7 @@ public class StoreDbOps {
         }
     }
 
-
+    // return all the store objects from db
     public static ArrayList<Store> getAllStores() throws Exception {
         ArrayList<Store> stores = new ArrayList<>();
 

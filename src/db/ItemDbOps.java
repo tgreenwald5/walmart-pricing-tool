@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class ItemDbOps {
     
+    // insert single item into db
     public static void insertItem(Item item) throws Exception {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -37,6 +38,7 @@ public class ItemDbOps {
         }
     }
 
+    // return all item objects from db
     public static ArrayList<Item> getAllItems() throws Exception {
         ArrayList<Item> items = new ArrayList<>();
 
