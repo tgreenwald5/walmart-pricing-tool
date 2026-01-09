@@ -29,8 +29,9 @@ public class StoreCsvImporter {
             double storeLat = Double.parseDouble(cols[7]);
             double storeLon = Double.parseDouble(cols[8]);
             String storeCountyFips = cols[9];
+            String storeStateFips = cols[10];
 
-            Store store = new Store(storeId, storeRegion, storeState, storeCounty, storeCity, storeLat, storeLon, storeCountyFips);
+            Store store = new Store(storeId, storeRegion, storeState, storeCounty, storeCity, storeLat, storeLon, storeCountyFips, storeStateFips);
             stores.add(store);
         }
         reader.close();
