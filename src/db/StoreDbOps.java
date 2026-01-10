@@ -80,6 +80,9 @@ public class StoreDbOps {
             return store;
 
         } finally {
+            if (rs != null) {
+                rs.close();
+            }
             if (ps != null) {
                 ps.close();
             }
@@ -120,6 +123,9 @@ public class StoreDbOps {
             }
 
         } finally {
+            if (rs != null) {
+                rs.close();
+            }
             if (ps != null) {
                 ps.close();
             }

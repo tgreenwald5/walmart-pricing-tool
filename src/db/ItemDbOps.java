@@ -64,6 +64,9 @@ public class ItemDbOps {
             }
 
         } finally {
+            if (rs != null) {
+                rs.close();
+            }
             if (ps != null) {
                 ps.close();
             }

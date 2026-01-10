@@ -29,12 +29,14 @@ public class LatestPriceAnalytics {
         return calcAvgPrice(prices);
     }
 
+    /*
     // get the latest average price of a specific item in a specific state
     public static int getLatestStateAvgForItem(long id, String stateFips) throws Exception {
         ArrayList<Price> prices = new ArrayList<>();
         prices = PriceDbOps.getLatestStateItemPrices(id, stateFips);
         return calcAvgPrice(prices);
     }
+    */
 
     // get the latest average price of a specific item in a specific county
     public static int getLatestCountyAvgForItem(long id, String countyFips) throws Exception {

@@ -5,6 +5,9 @@ import src.model.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.util.Map;
+
+import java.util.HashMap;
 
 public class PriceDbOps {
 
@@ -38,6 +41,7 @@ public class PriceDbOps {
             if (conn != null) {
                 conn.close();
             }
+        
         }
     }
 
@@ -68,6 +72,9 @@ public class PriceDbOps {
             }
 
         } finally {
+            if (rs != null) {
+                rs.close();
+            }
             if (ps != null) {
                 ps.close();
             }
@@ -98,6 +105,9 @@ public class PriceDbOps {
 
             
         } finally {
+            if (rs != null) {
+                rs.close();
+            }
             if (ps != null) {
                 ps.close();
             }
@@ -107,6 +117,41 @@ public class PriceDbOps {
 
         }
     }
+
+    // return the latest date prices were collected at for specific item (items may not all be collected on same latest day)
+    public static String getLatestObservedDateForItem(long itemId) throws Exception {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql = "SELECT MAX(observed_date) AS max_date FROM prices WHERE item_id = ?";
+            ps = conn.prepareStatement(sql);
+            ps.setLong(1, itemId);
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("max_date");
+            }
+            return null;
+
+            
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+
+        }
+    }
+
 
     // get all of the latest prices of a specific item in the US
     public static ArrayList<Price> getLatestCountryItemPrices(long itemId) throws Exception {
@@ -146,6 +191,9 @@ public class PriceDbOps {
             }
 
         } finally {
+            if (rs != null) {
+                rs.close();
+            }
             if (ps != null) {
                 ps.close();
             }
@@ -157,6 +205,7 @@ public class PriceDbOps {
         return prices;
     }
 
+    /*
     // get all of the latest prices of a specific item in a specific state (input state fips)
     public static ArrayList<Price> getLatestStateItemPrices(long itemId, String stateFips) throws Exception {
         ArrayList<Price> prices = new ArrayList<>();
@@ -197,6 +246,9 @@ public class PriceDbOps {
             }
 
         } finally {
+            if (rs != null) {
+                rs.close();
+            }
             if (ps != null) {
                 ps.close();
             }
@@ -207,6 +259,59 @@ public class PriceDbOps {
 
         return prices;
     }
+    */
+
+    // get latest average price (cents) of inputted item in every state 
+    public static Map<String, Integer> getLatestAvgPriceCentsByState(long itemId) throws Exception {
+        Map<String, Integer> stateToAvgCents = new HashMap<>();
+
+        String latestDate = getLatestObservedDateForItem(itemId);
+        if (latestDate == null) {
+            return stateToAvgCents;
+        }
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql =
+                "SELECT s.state_fips AS statefp, AVG(p.price_cents) AS avg_cents " +
+                "FROM prices p " +
+                "JOIN stores s ON s.id = p.store_id " +
+                "WHERE p.observed_date = ? AND p.item_id = ? " +
+                "GROUP BY s.state_fips";
+            
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, latestDate);
+            ps.setLong(2, itemId);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String stateFp = rs.getString("statefp");
+                double avgCents = rs.getDouble("avg_cents");
+    
+                int rounded = (int) Math.round(avgCents);
+                stateToAvgCents.put(stateFp, rounded);
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+        return stateToAvgCents;
+    }
+
+    
 
     // get all of the latest prices of a specific item in a specific county (input county fips)
     public static ArrayList<Price> getLatestCountyItemPrices(long itemId, String countyFips) throws Exception {
@@ -248,6 +353,9 @@ public class PriceDbOps {
             }
 
         } finally {
+            if (rs != null) {
+                rs.close();
+            }
             if (ps != null) {
                 ps.close();
             }
