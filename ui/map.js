@@ -1,5 +1,6 @@
 const STYLE_URL = "mapbox://styles/greenwaldtaylor/cmk6lyxgz003w01sddexf2who";
 
+// default lines and fills
 const LAYERS = {
     states: {
         line: "us-states-lines",
@@ -9,6 +10,12 @@ const LAYERS = {
         line: "us-counties-lines",
         fill: "us-counties-fill"
     }
+};
+
+// lines of selected states and counties (higher opacity)
+const SELECTED_LAYERS = {
+    state: "us-states-selected-lines",
+    county: "us-counties-selected-lines"
 };
 
 // set layer visibility
@@ -22,8 +29,9 @@ function setGroupVisibility(map, group, visible) {
     setLayerVisibility(map, group.fill, visible);
 }
 
-
+// vars to store currently selected state and county
 let selectedStateKey = null;
+let selectedCountyKey = null;
 
 function showStates(map) {
     selectedStateKey = null;
@@ -31,6 +39,12 @@ function showStates(map) {
     // show states and hide counties
     setGroupVisibility(map, LAYERS.counties, false)
     setGroupVisibility(map, LAYERS.states, true);
+
+    // clear all selected layers
+    setLayerVisibility(map, SELECTED_LAYERS.state, false);
+    setLayerVisibility(map, SELECTED_LAYERS.county, false);
+    map.setFilter(SELECTED_LAYERS.state, null);
+    map.setFilter(SELECTED_LAYERS.county, null);
 
     // clear county filters
     map.setFilter(LAYERS.counties.line, null);
@@ -48,6 +62,24 @@ function showCountiesForState(map, countyFilter) {
     map.setFilter(LAYERS.counties.line, countyFilter);
     map.setFilter(LAYERS.counties.fill, countyFilter);
     setGroupVisibility(map, LAYERS.counties, true);
+}
+
+function getFeatureBounds(feature) {
+    const bounds = new mapboxgl.LngLatBounds();
+    const coords = feature.geometry.coordinates;
+
+    function extendFromCoordArray(arr) {
+        for (const c of arr) {
+            if (typeof c[0] === "number" && typeof c[1] === "number") {
+                bounds.extend(c);
+            } else {
+                extendFromCoordArray(c);
+            }
+        }
+    }
+
+    extendFromCoordArray(coords);
+    return bounds;
 }
 
 
@@ -88,12 +120,28 @@ function initMap() {
             if (!feature) {
                 return;
             }
-            //console.log("state data:", feature.properties); debug
+            
+            selectedCountyKey = null; // clear selected county
 
             const stateKey = feature.properties.STATEFP; // get fips code state clicked on
             selectedStateKey = stateKey;
 
             const countyFilter = ["==", ["get", "STATEFP"], stateKey]; // filter to only show counties from clicked state
+
+            // show selected state line
+            setLayerVisibility(map, SELECTED_LAYERS.state, true);
+            map.setFilter(SELECTED_LAYERS.state, ["==", ["get", "STATEFP"], stateKey]);
+
+            // clear any county selected line
+            setLayerVisibility(map, SELECTED_LAYERS.county, false);
+            map.setFilter(SELECTED_LAYERS.county, false);
+            
+            const bounds = getFeatureBounds(feature);
+            map.fitBounds(bounds, {
+                padding: 40,
+                duration: 800,
+                maxZoom: 7
+            })
 
             showCountiesForState(map, countyFilter);
 
@@ -105,7 +153,13 @@ function initMap() {
             if (!feature) {
                 return;
             }
-            //console.log("county data:", feature.properties); debug
+            
+            // show selected county line
+            const countyKey = feature.properties.GEOID; // get fips code county clicked on
+            setLayerVisibility(map, SELECTED_LAYERS.county, true);
+            map.setFilter(SELECTED_LAYERS.county, ["==", ["get", "GEOID"], countyKey]);
+
+            selectedCountyKey = countyKey; // store selected countyKey
         });
 
 
