@@ -1,6 +1,6 @@
-package src.db;
+package db;
 
-import src.model.Item;
+import model.Item;
 
 import java.sql.*;
 import java.util.ArrayList;

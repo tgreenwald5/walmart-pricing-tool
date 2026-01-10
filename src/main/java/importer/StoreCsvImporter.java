@@ -1,8 +1,8 @@
-package src.importer;
+package importer;
 
-import src.db.*;
+import db.*;
 
-import src.model.Store;
+import model.Store;
 
 import java.util.ArrayList;
 import java.io.BufferedReader;

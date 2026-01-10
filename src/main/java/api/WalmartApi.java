@@ -1,4 +1,4 @@
-package src.api;
+package api;
 
 import java.net.URI;
 import java.net.http.HttpClient;

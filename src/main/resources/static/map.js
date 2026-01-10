@@ -126,6 +126,8 @@ function initMap() {
             const stateKey = feature.properties.STATEFP; // get fips code state clicked on
             selectedStateKey = stateKey;
 
+            console.log(feature.properties);
+
             const countyFilter = ["==", ["get", "STATEFP"], stateKey]; // filter to only show counties from clicked state
 
             // show selected state line
@@ -135,7 +137,7 @@ function initMap() {
             // clear any county selected line
             setLayerVisibility(map, SELECTED_LAYERS.county, false);
             map.setFilter(SELECTED_LAYERS.county, false);
-            
+
             const bounds = getFeatureBounds(feature);
             map.fitBounds(bounds, {
                 padding: 40,

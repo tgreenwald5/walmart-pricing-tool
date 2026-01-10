@@ -1,7 +1,7 @@
-package src.analytics;
+package analytics;
 
-import src.db.PriceDbOps;
-import src.model.*;
+import db.PriceDbOps;
+import model.*;
 
 import java.util.ArrayList;
 

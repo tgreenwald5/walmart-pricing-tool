@@ -1,4 +1,4 @@
-package src.api;
+package api;
 //package com.walmart.platform.common;
 
 import java.io.ObjectStreamException;

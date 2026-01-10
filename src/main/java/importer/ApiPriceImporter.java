@@ -1,8 +1,8 @@
-package src.importer;
+package importer;
 
-import src.model.*;
-import src.api.WalmartApi;
-import src.db.*;
+import model.*;
+import api.WalmartApi;
+import db.*;
 
 import java.util.Map;
 import java.util.HashMap;
