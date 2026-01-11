@@ -18,7 +18,9 @@ const SELECTED_LAYERS = {
     county: "us-counties-selected-lines"
 };
 
-const MAP_PRICE_COLORS = ["#e8f5e9", "#c8e6c9", "#81c784", "#43a047", "#1b5e20"]
+// blue(cheap) -> white(median) -> red(expensive)
+const MAP_PRICE_COLORS = ["#053061","#2166ac","#4393c3","#92c5de","#d1e5f0","#f7f7f7","#fddbc7","#f4a582","#d6604d","#b2182b","#67001f"];
+const NO_DATA_COLOR = "#828282";
 
 // caches for hover lookups
 let stateToAvgCentsCache = {};
@@ -99,17 +101,52 @@ function getFeatureBounds(feature) {
     return bounds;
 }
 
-// convert a price to a color 
-function priceToColor(price, minPrice, maxPrice) {
-    if (maxPrice <= minPrice) { // if all prices same
-        return MAP_PRICE_COLORS[2];
+// clamp val to bounds
+function clamp(idx, min, max) {
+    return Math.max(min, Math.min(idx, max));
+}
+
+function calcPriceMedian(prices) {
+    if (!prices.length) {
+        return 0;
     }
 
-    const t = (price - minPrice) / (maxPrice - minPrice); // norm
-    const idx = Math.floor(t * MAP_PRICE_COLORS.length);
-    const clampIdx = Math.max(0, Math.min(MAP_PRICE_COLORS.length - 1, idx)); // clamp to price bounds
+    const sortedPrices = prices.slice().sort((a, b) => a - b);
+    const midIdx = Math.floor(sortedPrices.length / 2);
 
-    return MAP_PRICE_COLORS[clampIdx];
+    if (sortedPrices.length % 2 == 1) {
+        return sortedPrices[midIdx]
+    } else {
+        return (sortedPrices[midIdx - 1] + sortedPrices[midIdx]) / 2;
+    }
+}
+
+
+// convert a price to a color 
+function priceToColor(avgPrice, minAvgPrice, medianAvgPrice, maxAvgPrice) {
+    if (!Number.isFinite(avgPrice)) {
+        return NO_DATA_COLOR;
+    }
+
+    const colorCount = MAP_PRICE_COLORS.length;
+    const midColorIdx = Math.floor(colorCount / 2);
+
+    if (maxAvgPrice <= minAvgPrice) {
+        return MAP_PRICE_COLORS[midColorIdx];
+    }
+
+    if (avgPrice <= medianAvgPrice) {
+        const rangeBelowMedian = (medianAvgPrice - minAvgPrice) || 1;
+        const norm = (avgPrice - minAvgPrice) / rangeBelowMedian;
+        const colorIdx = Math.floor(norm * midColorIdx);
+        return MAP_PRICE_COLORS[clamp(colorIdx, 0, midColorIdx)];
+    }
+
+    const rangeAboveMedian = (maxAvgPrice - medianAvgPrice) || 1;
+    const norm = (avgPrice - medianAvgPrice) / rangeAboveMedian;
+    const colorIdx = midColorIdx + Math.floor(norm * (colorCount - 1 - midColorIdx));
+
+    return MAP_PRICE_COLORS[clamp(colorIdx, midColorIdx, colorCount - 1)];
 }
 
 // add state price colors to map
@@ -178,19 +215,20 @@ async function fetchStatePricesAndColor(map, itemId) {
 
     stateToAvgCentsCache = stateToAvgCents; // store states prices avgs in cache
 
-    const values = Object.values(stateToAvgCents).map(Number); // extract the avg prices from json
-    if (!values.length) {
+    const avgPriceVals = Object.values(stateToAvgCents).map(Number).filter(Number.isFinite); // extract the avg prices from json
+    if (!avgPriceVals.length) {
         return;
     }
 
     // calc min and max avg prices
-    const minAvgCents = Math.min(...values);
-    const maxAvgCents = Math.max(...values);
+    const minAvgCents = Math.min(...avgPriceVals);
+    const maxAvgCents = Math.max(...avgPriceVals);
+    const medianAvgCents = calcPriceMedian(avgPriceVals);
 
     // map statefp -> color
     const stateToColor = {};
-    for (const [statefp, cents] of Object.entries(stateToAvgCents)) {
-        stateToColor[String(statefp).padStart(2, "0")] = priceToColor(Number(cents), minAvgCents, maxAvgCents); // pad w 0s if not 2 digits already
+    for (const [statefp, avgCents] of Object.entries(stateToAvgCents)) {
+        stateToColor[String(statefp).padStart(2, "0")] = priceToColor(Number(avgCents), minAvgCents, medianAvgCents, maxAvgCents);
     }
 
     fillStateColors(map, stateToColor);
@@ -202,19 +240,20 @@ async function fetchCountyPricesAndColor(map, itemId, statefp) {
     const countyToAvgCents = await res.json(); // parse json
     countyToAvgCentsCache = countyToAvgCents; // store selected state counties price avgs in cache
 
-    const values = Object.values(countyToAvgCents).map(Number); // extract the avg prices from json
-    if (!values.length) {
+    const avgPriceVals = Object.values(countyToAvgCents).map(Number).filter(Number.isFinite); // extract the avg prices from json
+    if (!avgPriceVals.length) {
         return;
     }
 
     // calc min and max avg prices
-    const minAvgCents = Math.min(...values);
-    const maxAvgCents = Math.max(...values);
+    const minAvgCents = Math.min(...avgPriceVals);
+    const maxAvgCents = Math.max(...avgPriceVals);
+    const medianAvgCents = calcPriceMedian(avgPriceVals);
 
     // map county geoid -> color
     const countyToColor = {};
-    for (const [geoid, cents] of Object.entries(countyToAvgCents)) {
-        countyToColor[String(geoid)] = priceToColor(Number(cents), minAvgCents, maxAvgCents);
+    for (const [geoid, avgCents] of Object.entries(countyToAvgCents)) {
+        countyToColor[String(geoid)] = priceToColor(Number(avgCents), minAvgCents, medianAvgCents, maxAvgCents);
     }
 
     fillCountyColors(map, countyToColor);
@@ -237,7 +276,7 @@ function initMap() {
     map.on("load", () => {
         showStates(map);
 
-        const itemId = 10450115; // CHOOSE ITEM HERE
+        const itemId = 10315355; // CHOOSE ITEM HERE
         fetchStatePricesAndColor(map, itemId)
         map.setPaintProperty(LAYERS.states.fill, "fill-opacity", 0.6); // make sure colors can actually be seen
 
@@ -282,7 +321,7 @@ function initMap() {
             hoverPopup
                 .setLngLat(e.lngLat)
                 .setHTML(`<div style="font-size:12px">
-                            <div><b>${stateName}</b></div>
+                            <div><u><b>${stateName}</b></u></div>
                             <div>Latest Average: ${formatCents(avgCents)}</div>
                             <div>Number of Stores: ${formatStoreCount(storeCount)}</div>
                         </div>`)
@@ -311,7 +350,7 @@ function initMap() {
             hoverPopup
                 .setLngLat(e.lngLat)
                 .setHTML(`<div style="font-size:12px">
-                            <div><b>${countyName}</b></div>
+                            <div><u><b>${countyName}</b></u></div>
                             <div>Latest Average: ${formatCents(avgCents)}</div>
                             <div>Number of Stores: ${formatStoreCount(storeCount)}</div>
                         </div>`)
