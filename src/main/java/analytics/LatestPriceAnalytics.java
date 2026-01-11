@@ -22,12 +22,14 @@ public class LatestPriceAnalytics {
         return (int) Math.round(avgPrice);
     }
 
+    /*
     // get the latest average price of a specific item in the whole US
     public static int getLatestCountryAvgForItem(long itemId) throws Exception {
         ArrayList<Price> prices = new ArrayList<>();
         prices = PriceDbOps.getLatestCountryItemPrices(itemId);
         return calcAvgPrice(prices);
     }
+    */
 
     /*
     // get the latest average price of a specific item in a specific state

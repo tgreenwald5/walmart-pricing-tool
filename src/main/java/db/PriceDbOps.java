@@ -152,115 +152,6 @@ public class PriceDbOps {
         }
     }
 
-
-    // get all of the latest prices of a specific item in the US
-    public static ArrayList<Price> getLatestCountryItemPrices(long itemId) throws Exception {
-        ArrayList<Price> prices = new ArrayList<>();
-
-        String latestDate  = getLatestObservedDate();
-        if (latestDate == null) {
-            return prices;
-        }
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-
-        try {
-            conn = Database.getConnection();
-
-            String sql = 
-                    "SELECT * FROM prices " +
-                    "WHERE observed_date = ? AND item_id = ?";
-            
-            ps = conn.prepareStatement(sql);
-            ps.setString(1, latestDate);
-            ps.setLong(2, itemId);
-
-            rs = ps.executeQuery();
-
-            while (rs.next()) {
-                Price price = new Price(
-                    rs.getLong("price_id"),
-                    rs.getInt("store_id"),
-                    rs.getLong("item_id"),
-                    rs.getInt("price_cents"),
-                    rs.getString("observed_date")
-                );
-                prices.add(price);
-            }
-
-        } finally {
-            if (rs != null) {
-                rs.close();
-            }
-            if (ps != null) {
-                ps.close();
-            }
-            if (conn != null) {
-                conn.close();
-            }
-        }
-
-        return prices;
-    }
-
-    /*
-    // get all of the latest prices of a specific item in a specific state (input state fips)
-    public static ArrayList<Price> getLatestStateItemPrices(long itemId, String stateFips) throws Exception {
-        ArrayList<Price> prices = new ArrayList<>();
-
-        String latestDate  = getLatestObservedDate();
-        if (latestDate == null) {
-            return prices;
-        }
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-
-        try {
-            conn = Database.getConnection();
-
-            String sql = 
-                    "SELECT p.* FROM prices p " +
-                    "JOIN stores s ON p.store_id = s.id " +
-                    "WHERE p.observed_date = ? AND p.item_id = ? AND s.state_fips = ?";
-            
-            ps = conn.prepareStatement(sql);
-            ps.setString(1, latestDate);
-            ps.setLong(2, itemId);
-            ps.setString(3, stateFips);
-
-            rs = ps.executeQuery();
-
-            while (rs.next()) {
-                Price price = new Price(
-                    rs.getLong("price_id"),
-                    rs.getInt("store_id"),
-                    rs.getLong("item_id"),
-                    rs.getInt("price_cents"),
-                    rs.getString("observed_date")
-                );
-                prices.add(price);
-            }
-
-        } finally {
-            if (rs != null) {
-                rs.close();
-            }
-            if (ps != null) {
-                ps.close();
-            }
-            if (conn != null) {
-                conn.close();
-            }
-        }
-
-        return prices;
-    }
-    */
-
     // get latest average price (cents) of inputted item in every state 
     public static Map<String, Integer> getLatestAvgPriceCentsByState(long itemId) throws Exception {
         Map<String, Integer> stateToAvgCents = new HashMap<>();
@@ -278,11 +169,11 @@ public class PriceDbOps {
             conn = Database.getConnection();
 
             String sql =
-                "SELECT s.state_fips AS statefp, AVG(p.price_cents) AS avg_cents " +
-                "FROM prices p " +
-                "JOIN stores s ON s.id = p.store_id " +
-                "WHERE p.observed_date = ? AND p.item_id = ? " +
-                "GROUP BY s.state_fips";
+                    "SELECT s.state_fips AS statefp, AVG(p.price_cents) AS avg_cents " +
+                    "FROM prices p " +
+                    "JOIN stores s ON s.id = p.store_id " +
+                    "WHERE p.observed_date = ? AND p.item_id = ? " +
+                    "GROUP BY s.state_fips";
             
             ps = conn.prepareStatement(sql);
             ps.setString(1, latestDate);
@@ -311,63 +202,6 @@ public class PriceDbOps {
         return stateToAvgCents;
     }
 
-    
-    /*
-    // get all of the latest prices of a specific item in a specific county (input county fips)
-    public static ArrayList<Price> getLatestCountyItemPrices(long itemId, String countyFips) throws Exception {
-        ArrayList<Price> prices = new ArrayList<>();
-
-        String latestDate  = getLatestObservedDate();
-        if (latestDate == null) {
-            return prices;
-        }
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-
-        try {
-            conn = Database.getConnection();
-
-            String sql = 
-                    "SELECT p.* FROM prices p " +
-                    "JOIN stores s ON p.store_id = s.id " +
-                    "WHERE p.observed_date = ? AND p.item_id = ? AND s.county_fips = ?";
-            
-            ps = conn.prepareStatement(sql);
-            ps.setString(1, latestDate);
-            ps.setLong(2, itemId);
-            ps.setString(3, countyFips);
-
-            rs = ps.executeQuery();
-
-            while (rs.next()) {
-                Price price = new Price(
-                    rs.getLong("price_id"),
-                    rs.getInt("store_id"),
-                    rs.getLong("item_id"),
-                    rs.getInt("price_cents"),
-                    rs.getString("observed_date")
-                );
-                prices.add(price);
-            }
-
-        } finally {
-            if (rs != null) {
-                rs.close();
-            }
-            if (ps != null) {
-                ps.close();
-            }
-            if (conn != null) {
-                conn.close();
-            }
-        }
-
-        return prices;
-    }
-    */
-
 
     // get latest average price (cents) of inputted item in every county in a state
     public static Map<String, Integer> getLatestAvgPriceCentsByCounty(long itemId, String stateFp) throws Exception {
@@ -386,11 +220,11 @@ public class PriceDbOps {
             conn = Database.getConnection();
 
             String sql =
-                "SELECT s.county_fips AS geoid, AVG(p.price_cents) AS avg_cents " +
-                "FROM prices p " +
-                "JOIN stores s ON s.id = p.store_id " +
-                "WHERE p.observed_date = ? AND p.item_id = ? AND s.state_fips = ? " +
-                "GROUP BY s.county_fips";
+                    "SELECT s.county_fips AS geoid, AVG(p.price_cents) AS avg_cents " +
+                    "FROM prices p " +
+                    "JOIN stores s ON s.id = p.store_id " +
+                    "WHERE p.observed_date = ? AND p.item_id = ? AND s.state_fips = ? " +
+                    "GROUP BY s.county_fips";
             
             ps = conn.prepareStatement(sql);
             ps.setString(1, latestDate);
@@ -404,7 +238,7 @@ public class PriceDbOps {
 
                 double avgCents = rs.getDouble("avg_cents");
                 int rounded = (int) Math.round(avgCents);
-                
+
                 countyToAvgCents.put(geoid, rounded);
             }
         } finally {
@@ -419,6 +253,103 @@ public class PriceDbOps {
             }
         }
         return countyToAvgCents;
+    }
+
+    public static Map<String, Integer> getLatestStoreCountByState(long itemId) throws Exception {
+        Map<String, Integer> stateToStoreCount = new HashMap<>();
+
+        String latestDate = getLatestObservedDateForItem(itemId);
+        if (latestDate == null) {
+            return stateToStoreCount;
+        }
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql =
+                    "SELECT s.state_fips AS statefp, COUNT(DISTINCT p.store_id) AS store_count " +
+                    "FROM prices p " +
+                    "JOIN stores s ON s.id = p.store_id " +
+                    "WHERE p.observed_date = ? AND p.item_id = ? " +
+                    "GROUP BY s.state_fips";
+            
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, latestDate);
+            ps.setLong(2, itemId);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String stateFp = rs.getString("statefp");
+                int storeCount = rs.getInt("store_count");
+
+                stateToStoreCount.put(stateFp, storeCount);
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+        return stateToStoreCount;
+    }
+
+    public static Map<String, Integer> getLatestStoreCountByCounty(long itemId, String stateFp) throws Exception {
+        Map<String, Integer> countyToStoreCount = new HashMap<>();
+
+        String latestDate = getLatestObservedDateForItem(itemId);
+        if (latestDate == null) {
+            return countyToStoreCount;
+        }
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql =
+                    "SELECT s.county_fips AS geoid, COUNT(DISTINCT p.store_id) AS store_count " +
+                    "FROM prices p " +
+                    "JOIN stores s ON s.id = p.store_id " +
+                    "WHERE p.observed_date = ? AND p.item_id = ? AND s.state_fips = ? " +
+                    "GROUP BY s.county_fips";
+            
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, latestDate);
+            ps.setLong(2, itemId);
+            ps.setString(3, stateFp);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String geoid = rs.getString("geoid");
+                int storeCount = rs.getInt("store_count");
+
+                countyToStoreCount.put(geoid, storeCount);
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+        return countyToStoreCount;
     }
 
 }

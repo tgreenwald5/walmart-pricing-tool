@@ -20,6 +20,13 @@ const SELECTED_LAYERS = {
 
 const MAP_PRICE_COLORS = ["#e8f5e9", "#c8e6c9", "#81c784", "#43a047", "#1b5e20"]
 
+// caches for hover lookups
+let stateToAvgCentsCache = {};
+let countyToAvgCentsCache = {}; // for counties of currently selected state
+
+let stateToStoreCountCache = {};
+let countyToStoreCountCache = {}; // for counties of currently selected state
+
 
 // set layer visibility
 function setLayerVisibility(map, layerId, visible) {
@@ -38,6 +45,10 @@ let selectedCountyKey = null;
 
 function showStates(map) {
     selectedStateKey = null;
+
+    // clear county caches when states view is entered
+    countyToAvgCentsCache = {};
+    countyToStoreCountCache = {};
 
     // show states and hide counties
     setGroupVisibility(map, LAYERS.counties, false)
@@ -128,10 +139,44 @@ function fillCountyColors(map, countyToColor) {
     map.setPaintProperty(LAYERS.counties.fill, "fill-color", matchExpr); // add colors
 }
 
+// format cents to dollars
+function formatCents(cents) {
+    if (cents == null || !Number.isFinite(Number(cents))) {
+        return "N/A";
+    }
+    return `$${(Number(cents) / 100).toFixed(2)}`;
+}
+
+// format cents to dollars
+function formatStoreCount(count) {
+    if (count == null || !Number.isFinite(Number(count))) {
+        return "0";
+    }
+    return Number(count).toString();
+}
+
+// fetch latest store counts (that has item) by state
+async function fetchStateStoreCounts(itemId) {
+    const res = await fetch(`/api/summary/latest/state/store-count?itemId=${itemId}`);
+
+    stateToStoreCount = await res.json();
+    stateToStoreCountCache = stateToStoreCount;
+}
+
+// fetch latest store counts (that has item) by counties within selected state 
+async function fetchCountyStoreCounts(itemId, statefp) {
+    const res = await fetch(`/api/summary/latest/county/store-count?itemId=${itemId}&statefp=${statefp}`);
+
+    countyToStoreCount = await res.json();
+    countyToStoreCountCache = countyToStoreCount;
+}
+
 // fetch the avg prices for each state from backend, get their corresponding colors, color map 
 async function fetchStatePricesAndColor(map, itemId) {
     const res = await fetch(`/api/summary/latest/state?itemId=${itemId}`);
     const stateToAvgCents = await res.json(); // parse json
+
+    stateToAvgCentsCache = stateToAvgCents; // store states prices avgs in cache
 
     const values = Object.values(stateToAvgCents).map(Number); // extract the avg prices from json
     if (!values.length) {
@@ -155,6 +200,7 @@ async function fetchStatePricesAndColor(map, itemId) {
 async function fetchCountyPricesAndColor(map, itemId, statefp) {
     const res = await fetch(`/api/summary/latest/county?itemId=${itemId}&statefp=${statefp}`);
     const countyToAvgCents = await res.json(); // parse json
+    countyToAvgCentsCache = countyToAvgCents; // store selected state counties price avgs in cache
 
     const values = Object.values(countyToAvgCents).map(Number); // extract the avg prices from json
     if (!values.length) {
@@ -187,12 +233,15 @@ function initMap() {
 
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
+    // LOAD MAP
     map.on("load", () => {
         showStates(map);
 
         const itemId = 10450115; // CHOOSE ITEM HERE
         fetchStatePricesAndColor(map, itemId)
         map.setPaintProperty(LAYERS.states.fill, "fill-opacity", 0.6); // make sure colors can actually be seen
+
+        fetchStateStoreCounts(itemId);
 
         // give clickable look (states)
         map.on("mouseenter", LAYERS.states.fill, () => {
@@ -208,6 +257,69 @@ function initMap() {
         });
         map.on("mouseleave", LAYERS.counties.fill, () => {
             map.getCanvas().style.cursor = "";
+        });
+
+        // pop up card on hover
+        const hoverPopup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            offset: 12
+        });
+
+        // hover over states to show avg price and store count near cursor
+        map.on("mousemove", LAYERS.states.fill, (e) => {
+            const feature = e.features && e.features[0];
+            if (!feature) {
+                return
+            }
+
+            const stateName = String(feature.properties.NAME); // name of state hovered
+            const statefp = String(feature.properties.STATEFP).padStart(2, "0");
+
+            const avgCents = stateToAvgCentsCache[statefp]; // get state avg price from cache
+            const storeCount = stateToStoreCountCache[statefp];
+
+            hoverPopup
+                .setLngLat(e.lngLat)
+                .setHTML(`<div style="font-size:12px">
+                            <div><b>${stateName}</b></div>
+                            <div>Latest Average: ${formatCents(avgCents)}</div>
+                            <div>Number of Stores: ${formatStoreCount(storeCount)}</div>
+                        </div>`)
+                .addTo(map);
+
+        });
+
+        map.on("mouseleave", LAYERS.states.fill, () => {
+            hoverPopup.remove();
+        });
+
+
+        // hover over counties to show avg price near cursor
+        map.on("mousemove", LAYERS.counties.fill, (e) => {
+            const feature = e.features && e.features[0];
+            if (!feature) {
+                return;
+            }
+
+            const countyName = String(feature.properties.NAMELSAD); // name of county hovered
+            const geoid = String(feature.properties.GEOID);
+
+            const avgCents = countyToAvgCentsCache[geoid];
+            const storeCount = countyToStoreCountCache[geoid];
+
+            hoverPopup
+                .setLngLat(e.lngLat)
+                .setHTML(`<div style="font-size:12px">
+                            <div><b>${countyName}</b></div>
+                            <div>Latest Average: ${formatCents(avgCents)}</div>
+                            <div>Number of Stores: ${formatStoreCount(storeCount)}</div>
+                        </div>`)
+                .addTo(map);
+        });
+
+        map.on("mouseleave", LAYERS.counties.fill, () => {
+            hoverPopup.remove();
         });
 
         // a state is clicked on
@@ -245,6 +357,8 @@ function initMap() {
             // show counties and their price colors
             showCountiesForState(map, countyFilter);
             fetchCountyPricesAndColor(map, itemId, stateKey);
+
+            fetchCountyStoreCounts(itemId, stateKey);
 
         });
 
