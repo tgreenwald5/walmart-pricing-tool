@@ -14,4 +14,11 @@ public class SummaryController {
     public Map<String, Integer> latestStateAvg(@RequestParam long itemId) throws Exception {
         return PriceDbOps.getLatestAvgPriceCentsByState(itemId);
     }
+
+    @GetMapping("/api/summary/latest/county")
+    public Map<String, Integer> latestCountyAvg(@RequestParam long itemId, @RequestParam String statefp) throws Exception {
+        return PriceDbOps.getLatestAvgPriceCentsByCounty(itemId, statefp);
+    }
+
+
 }

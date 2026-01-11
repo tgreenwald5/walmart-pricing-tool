@@ -312,7 +312,7 @@ public class PriceDbOps {
     }
 
     
-
+    /*
     // get all of the latest prices of a specific item in a specific county (input county fips)
     public static ArrayList<Price> getLatestCountyItemPrices(long itemId, String countyFips) throws Exception {
         ArrayList<Price> prices = new ArrayList<>();
@@ -366,4 +366,60 @@ public class PriceDbOps {
 
         return prices;
     }
+    */
+
+
+    // get latest average price (cents) of inputted item in every county in a state
+    public static Map<String, Integer> getLatestAvgPriceCentsByCounty(long itemId, String stateFp) throws Exception {
+        Map<String, Integer> countyToAvgCents = new HashMap<>();
+
+        String latestDate = getLatestObservedDateForItem(itemId);
+        if (latestDate == null) {
+            return countyToAvgCents;
+        }
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql =
+                "SELECT s.county_fips AS geoid, AVG(p.price_cents) AS avg_cents " +
+                "FROM prices p " +
+                "JOIN stores s ON s.id = p.store_id " +
+                "WHERE p.observed_date = ? AND p.item_id = ? AND s.state_fips = ? " +
+                "GROUP BY s.county_fips";
+            
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, latestDate);
+            ps.setLong(2, itemId);
+            ps.setString(3, stateFp);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String geoid = rs.getString("geoid");
+
+                double avgCents = rs.getDouble("avg_cents");
+                int rounded = (int) Math.round(avgCents);
+                
+                countyToAvgCents.put(geoid, rounded);
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+        return countyToAvgCents;
+    }
+
 }
+

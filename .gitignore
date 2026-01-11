@@ -32,7 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
+### other ###
 .env
 *.db
 .DS_Store
-
+*.db-shm
+*.db-wal

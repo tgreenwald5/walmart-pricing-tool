@@ -1,6 +1,6 @@
 const STYLE_URL = "mapbox://styles/greenwaldtaylor/cmk6lyxgz003w01sddexf2who";
 
-// default lines and fills
+// normal layers
 const LAYERS = {
     states: {
         line: "us-states-lines",
@@ -12,11 +12,14 @@ const LAYERS = {
     }
 };
 
-// lines of selected states and counties (higher opacity)
+// selected layers (higher opacity lines)
 const SELECTED_LAYERS = {
     state: "us-states-selected-lines",
     county: "us-counties-selected-lines"
 };
+
+const MAP_PRICE_COLORS = ["#e8f5e9", "#c8e6c9", "#81c784", "#43a047", "#1b5e20"]
+
 
 // set layer visibility
 function setLayerVisibility(map, layerId, visible) {
@@ -62,8 +65,11 @@ function showCountiesForState(map, countyFilter) {
     map.setFilter(LAYERS.counties.line, countyFilter);
     map.setFilter(LAYERS.counties.fill, countyFilter);
     setGroupVisibility(map, LAYERS.counties, true);
+
+    map.setPaintProperty(LAYERS.counties.fill, "fill-opacity", 0.6);
 }
 
+// get the bounds of clicked state for zoom in
 function getFeatureBounds(feature) {
     const bounds = new mapboxgl.LngLatBounds();
     const coords = feature.geometry.coordinates;
@@ -82,6 +88,92 @@ function getFeatureBounds(feature) {
     return bounds;
 }
 
+// convert a price to a color 
+function priceToColor(price, minPrice, maxPrice) {
+    if (maxPrice <= minPrice) { // if all prices same
+        return MAP_PRICE_COLORS[2];
+    }
+
+    const t = (price - minPrice) / (maxPrice - minPrice); // norm
+    const idx = Math.floor(t * MAP_PRICE_COLORS.length);
+    const clampIdx = Math.max(0, Math.min(MAP_PRICE_COLORS.length - 1, idx)); // clamp to price bounds
+
+    return MAP_PRICE_COLORS[clampIdx];
+}
+
+// add state price colors to map
+function fillStateColors(map, stateToColor) {
+    const matchExpr = ["match", ["get", "STATEFP"]];
+    
+    for (const [statefp, color] of Object.entries(stateToColor)) {
+        matchExpr.push(statefp, color);
+    }
+
+    matchExpr.push("#dddddd");
+
+    map.setPaintProperty(LAYERS.states.fill, "fill-color", matchExpr); // add colors
+}
+
+// add county price colors to map
+function fillCountyColors(map, countyToColor) {
+    const matchExpr = ["match", ["get", "GEOID"]];
+
+    for (const [geoid, color] of Object.entries(countyToColor)) {
+        matchExpr.push(geoid, color);
+    }
+
+    // default if no data for a county
+    matchExpr.push("#dddddd");
+
+    map.setPaintProperty(LAYERS.counties.fill, "fill-color", matchExpr); // add colors
+}
+
+// fetch the avg prices for each state from backend, get their corresponding colors, color map 
+async function fetchStatePricesAndColor(map, itemId) {
+    const res = await fetch(`/api/summary/latest/state?itemId=${itemId}`);
+    const stateToAvgCents = await res.json(); // parse json
+
+    const values = Object.values(stateToAvgCents).map(Number); // extract the avg prices from json
+    if (!values.length) {
+        return;
+    }
+
+    // calc min and max avg prices
+    const minAvgCents = Math.min(...values);
+    const maxAvgCents = Math.max(...values);
+
+    // map statefp -> color
+    const stateToColor = {};
+    for (const [statefp, cents] of Object.entries(stateToAvgCents)) {
+        stateToColor[String(statefp).padStart(2, "0")] = priceToColor(Number(cents), minAvgCents, maxAvgCents); // pad w 0s if not 2 digits already
+    }
+
+    fillStateColors(map, stateToColor);
+}
+
+// fetch the avg prices for each county in a state from backend, get their corresponding colors, color map
+async function fetchCountyPricesAndColor(map, itemId, statefp) {
+    const res = await fetch(`/api/summary/latest/county?itemId=${itemId}&statefp=${statefp}`);
+    const countyToAvgCents = await res.json(); // parse json
+
+    const values = Object.values(countyToAvgCents).map(Number); // extract the avg prices from json
+    if (!values.length) {
+        return;
+    }
+
+    // calc min and max avg prices
+    const minAvgCents = Math.min(...values);
+    const maxAvgCents = Math.max(...values);
+
+    // map county geoid -> color
+    const countyToColor = {};
+    for (const [geoid, cents] of Object.entries(countyToAvgCents)) {
+        countyToColor[String(geoid)] = priceToColor(Number(cents), minAvgCents, maxAvgCents);
+    }
+
+    fillCountyColors(map, countyToColor);
+}
+
 
 function initMap() {
     mapboxgl.accessToken = window.MAPBOX_TOKEN;
@@ -97,6 +189,10 @@ function initMap() {
 
     map.on("load", () => {
         showStates(map);
+
+        const itemId = 10450115; // CHOOSE ITEM HERE
+        fetchStatePricesAndColor(map, itemId)
+        map.setPaintProperty(LAYERS.states.fill, "fill-opacity", 0.6); // make sure colors can actually be seen
 
         // give clickable look (states)
         map.on("mouseenter", LAYERS.states.fill, () => {
@@ -138,6 +234,7 @@ function initMap() {
             setLayerVisibility(map, SELECTED_LAYERS.county, false);
             map.setFilter(SELECTED_LAYERS.county, false);
 
+            // zoom into state
             const bounds = getFeatureBounds(feature);
             map.fitBounds(bounds, {
                 padding: 40,
@@ -145,7 +242,9 @@ function initMap() {
                 maxZoom: 7
             })
 
+            // show counties and their price colors
             showCountiesForState(map, countyFilter);
+            fetchCountyPricesAndColor(map, itemId, stateKey);
 
         });
 
