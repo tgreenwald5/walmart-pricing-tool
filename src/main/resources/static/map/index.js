@@ -1,7 +1,47 @@
 import { STYLE_URL, LAYERS } from "./config.js";
-import { showStates } from "./uiState.js";
+import { uiState, showStates } from "./uiState.js";
 import { fetchStatePricesAndColor, fetchStateStoreCounts } from "./api.js";
 import { registerMapEvents } from "./events.js";
+
+function setupItemNav(map) {
+    const buttons = Array.from(document.querySelectorAll(".itemBtn"));
+
+    // just set the chosen item button as active
+    function setActive(btn) {
+        for (const b of buttons) {
+            b.classList.remove("active");
+        }
+        btn.classList.add("active");
+    }
+
+    // mark default selected item as active on load
+    for (const b of buttons) {
+        const id = Number(b.dataset.itemId);
+        if (id === uiState.selectedItemId) {
+            setActive(b);
+            break;
+        } 
+    }
+
+    for (const btn of buttons) {
+        btn.addEventListener("click", async () => {
+            const itemId = Number(btn.dataset.itemId);
+
+            if (itemId === uiState.selectedItemId) {
+                return;
+            }
+
+            uiState.selectedItemId = itemId;
+            setActive(btn);
+
+            showStates(map);
+            map.setPaintProperty(LAYERS.states.fill, "fill-opacity", 0.6);
+
+            await fetchStatePricesAndColor(map, itemId);
+            await fetchStateStoreCounts(itemId);
+        });
+    }
+}
 
 export function initMap() {
     mapboxgl.accessToken = window.MAPBOX_TOKEN;
@@ -16,16 +56,17 @@ export function initMap() {
       map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
       map.on("load", async () => {
+        map.resize();
+
         showStates(map); // only states visible
 
-        const itemId = 20971271; // item id for prices
-        await fetchStatePricesAndColor(map, itemId); // initially color states by latest average
+        await fetchStatePricesAndColor(map, uiState.selectedItemId); // initially color states by latest average
 
         map.setPaintProperty(LAYERS.states.fill, "fill-opacity", 0.6); // make sure state fill colors are actually visible
 
-        await fetchStateStoreCounts(itemId); // fetch state store counts for hover popup
+        await fetchStateStoreCounts(uiState.selectedItemId); // fetch state store counts for hover popup
 
-        registerMapEvents(map, itemId); // hover and click handling
+        registerMapEvents(map); // hover and click handling
       });
 
       return map
@@ -33,5 +74,6 @@ export function initMap() {
 
 // automatically add map
 document.addEventListener("DOMContentLoaded", () => {
-    initMap();
-  });
+  const map = initMap();
+  setupItemNav(map);
+});
