@@ -5,7 +5,7 @@ import { uiState, showStates, showCountiesForState, selectStateOutline, selectCo
 
 
 // hover popup card, cursor changes, and click zoom
-export function registerMapEvents(map, itemId) {
+export function registerMapEvents(map) {
     // change cursor so states and counties look more clickable
     map.on("mouseenter", LAYERS.states.fill, () => {
         map.getCanvas().style.cursor = "pointer";
@@ -39,8 +39,8 @@ export function registerMapEvents(map, itemId) {
         const statefp = String(feature.properties.STATEFP).padStart(2, "0");
 
         // get avg price and and store count from cache
-        const stateToAvgCents = cache.itemToStateAvgCents[itemId] || {};
-        const stateToStoreCount = cache.itemToStateStoreCount[itemId] || {};
+        const stateToAvgCents = cache.itemToStateAvgCents[uiState.selectedItemId] || {};
+        const stateToStoreCount = cache.itemToStateStoreCount[uiState.selectedItemId] || {};
         const avgCents = stateToAvgCents[statefp];
         const storeCount = stateToStoreCount[statefp];
 
@@ -76,8 +76,8 @@ export function registerMapEvents(map, itemId) {
         const geoid = String(feature.properties.GEOID);
 
         // get avg price and and store count from cache
-        const countyToAvgCents = (cache.itemAndStateToCountyAvgCents[itemId] && cache.itemAndStateToCountyAvgCents[itemId][stateKey]) || {};
-        const countyToStoreCount = (cache.itemAndStateToCountyStoreCount[itemId] && cache.itemAndStateToCountyStoreCount[itemId][stateKey]) || {};
+        const countyToAvgCents = (cache.itemAndStateToCountyAvgCents[uiState.selectedItemId] && cache.itemAndStateToCountyAvgCents[uiState.selectedItemId][stateKey]) || {};
+        const countyToStoreCount = (cache.itemAndStateToCountyStoreCount[uiState.selectedItemId] && cache.itemAndStateToCountyStoreCount[uiState.selectedItemId][stateKey]) || {};
         const avgCents = countyToAvgCents[geoid];
         const storeCount = countyToStoreCount[geoid];
 
@@ -128,8 +128,8 @@ export function registerMapEvents(map, itemId) {
         });
 
         // fetch avg prices and store counts and color counties
-        await fetchCountyPricesAndColor(map, itemId, stateKey);
-        await fetchCountyStoreCounts(itemId, stateKey);
+        await fetchCountyPricesAndColor(map, uiState.selectedItemId, stateKey);
+        await fetchCountyStoreCounts(uiState.selectedItemId, stateKey);
     });
 
     // click on a county to show selected outlines

@@ -1,6 +1,6 @@
 import { LAYERS, SELECTED_LAYERS } from "./config.js";
 
-export const uiState = { selectedStateFp: null, selectedCountyGeoid: null };
+export const uiState = { selectedStateFp: null, selectedCountyGeoid: null, selectedItemId: 10450115 };
 
 // set layer visibility
 export function setLayerVisibility(map, layerId, visible) {
