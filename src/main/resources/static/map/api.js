@@ -74,6 +74,26 @@ export async function fetchCountyPricesAndColor(map, itemId, statefp) {
     return countyToAvgCents;
 }
 
+// fetch nationl avg price trend for an item
+export async function fetchNationalTrend(itemId) {
+    const res = await fetch(`/api/trend/national?itemId=${itemId}`, { cache: "no-store" });
+    return await res.json();
+}
+
+// fetch state avg price trend for an item
+export async function fetchStateTrend(itemId, statefp) {
+    const stateKey = String(statefp).padStart(2, "0");
+    const res = await fetch(`/api/trend/state?itemId=${itemId}&statefp=${stateKey}`, { cache: "no-store" });
+    return await res.json();
+}
+
+// fetch county avg price trend for an item
+export async function fetchCountyTrend(itemId, countyFips) {
+    const countyKey = String(countyFips).padStart(5, "0");
+    const res = await fetch(`/api/trend/county?itemId=${itemId}&countyFips=${countyKey}`, { cache: "no-store" });
+    return await res.json();
+}
+
 // calc min, median, and max price for state prices, convert them them to colors, and color states
 function colorStates(map, stateToAvgCents) {
     const avgPriceVals = Object.values(stateToAvgCents).map(Number).filter(Number.isFinite); // extract the avg prices from json

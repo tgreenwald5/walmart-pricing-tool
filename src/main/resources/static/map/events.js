@@ -1,7 +1,8 @@
 import { LAYERS, SELECTED_LAYERS } from "./config.js";
-import { cache, fetchCountyPricesAndColor, fetchCountyStoreCounts } from "./api.js";
+import { cache, fetchCountyPricesAndColor, fetchCountyStoreCounts, fetchNationalTrend, fetchCountyTrend, fetchStateTrend } from "./api.js";
 import { formatCents, formatStoreCount } from "./colors.js";
 import { uiState, showStates, showCountiesForState, selectStateOutline, selectCountyOutline, setLayerVisibility, clearSelectionOutlines } from "./uiState.js";
+import { updateTrendChart } from "./chart.js";
 
 
 // hover popup card, cursor changes, and click zoom
@@ -130,10 +131,13 @@ export function registerMapEvents(map) {
         // fetch avg prices and store counts and color counties
         await fetchCountyPricesAndColor(map, uiState.selectedItemId, stateKey);
         await fetchCountyStoreCounts(uiState.selectedItemId, stateKey);
+
+        const stateTrend = await fetchStateTrend(uiState.selectedItemId, stateKey);
+        updateTrendChart(window.__trendChart, stateTrend, "State Average Price ($)");
     });
 
     // click on a county to show selected outlines
-    map.on("click", LAYERS.counties.fill, (e) => {
+    map.on("click", LAYERS.counties.fill, async (e) => {
         const feature = e.features && e.features[0];
         if (!feature) {
             return;
@@ -141,9 +145,12 @@ export function registerMapEvents(map) {
 
         const countyKey = String(feature.properties.GEOID);
         selectCountyOutline(map, countyKey);
+
+        const countyTrend = await fetchCountyTrend(uiState.selectedItemId, countyKey);
+        updateTrendChart(window.__trendChart, countyTrend, "County Average Price ($)");
     });
 
-    map.on("click", (e) => {
+    map.on("click", async (e) => {
         const hits = map.queryRenderedFeatures(e.point, {
             layers: [LAYERS.states.fill, LAYERS.counties.fill]
         });
@@ -156,6 +163,9 @@ export function registerMapEvents(map) {
 
             // re add state fill opacity
             map.setPaintProperty(LAYERS.states.fill, "fill-opacity", 0.6);
+            
+            const nationalTrend = await fetchNationalTrend(uiState.selectedItemId);
+            updateTrendChart(window.__trendChart, nationalTrend, "National Average Price ($)");
         }
     });
 }

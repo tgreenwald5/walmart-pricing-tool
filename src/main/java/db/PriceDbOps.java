@@ -352,5 +352,175 @@ public class PriceDbOps {
         return countyToStoreCount;
     }
 
+    // class for historical price trends
+    public static class DailyAvgPricePoint {
+        public String date; // yyyy-mm-dd
+        public int avgCents;
+        public int storeCount;
+
+        public DailyAvgPricePoint(String date, int avgCents, int storeCount) {
+            this.date = date;
+            this.avgCents = avgCents;
+            this.storeCount = storeCount;
+        }
+
+    }
+    private static final String EXCLUDED_DATE = "2026-01-06"; // day i didnt collect data from many stores
+
+    // get avg price trend of the entire us for an item
+    public static ArrayList<DailyAvgPricePoint> getNationalAvgPriceTrend(long itemId) throws Exception {
+        ArrayList<DailyAvgPricePoint> points = new ArrayList<>();
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql =
+                    "SELECT p.observed_date AS day, AVG(p.price_cents) as avg_cents, COUNT(DISTINCT p.store_id) as store_count " +
+                    "FROM prices p " +
+                    "WHERE p.item_id = ? AND p.observed_date <> ? " +
+                    "GROUP by p.observed_date " +
+                    "ORDER BY p.observed_date ASC";
+            
+            ps = conn.prepareStatement(sql);
+            ps.setLong(1, itemId);
+            ps.setString(2, EXCLUDED_DATE);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String day = rs.getString("day");
+
+                double avgCents = rs.getDouble("avg_cents");
+                int rounded = (int) Math.round(avgCents);
+
+                int storeCount = rs.getInt("store_count");
+
+                DailyAvgPricePoint point = new DailyAvgPricePoint(day, rounded, storeCount);
+                points.add(point);
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+        return points;
+
+    }
+
+    // get avg price trend of state for an item
+    public static ArrayList<DailyAvgPricePoint> getStateAvgPriceTrend(long itemId, String stateFp) throws Exception {
+        ArrayList<DailyAvgPricePoint> points = new ArrayList<>();
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql =
+                    "SELECT p.observed_date AS day, AVG(p.price_cents) as avg_cents, COUNT(DISTINCT p.store_id) as store_count " +
+                    "FROM prices p " +
+                    "JOIN stores s ON s.id = p.store_id " +
+                    "WHERE p.item_id = ? AND s.state_fips = ? AND p.observed_date <> ? " +
+                    "GROUP by p.observed_date " +
+                    "ORDER BY p.observed_date ASC";
+            
+            ps = conn.prepareStatement(sql);
+            ps.setLong(1, itemId);
+            ps.setString(2, stateFp);
+            ps.setString(3, EXCLUDED_DATE);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String day = rs.getString("day");
+
+                double avgCents = rs.getDouble("avg_cents");
+                int rounded = (int) Math.round(avgCents);
+
+                int storeCount = rs.getInt("store_count");
+
+                DailyAvgPricePoint point = new DailyAvgPricePoint(day, rounded, storeCount);
+                points.add(point);
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+        return points;
+
+    }
+
+
+    // get avg price trend of county for an item
+    public static ArrayList<DailyAvgPricePoint> getCountyAvgPriceTrend(long itemId, String countyFips) throws Exception {
+        ArrayList<DailyAvgPricePoint> points = new ArrayList<>();
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql =
+                    "SELECT p.observed_date AS day, AVG(p.price_cents) as avg_cents, COUNT(DISTINCT p.store_id) as store_count " +
+                    "FROM prices p " +
+                    "JOIN stores s ON s.id = p.store_id " +
+                    "WHERE p.item_id = ? AND s.county_fips = ? AND p.observed_date <> ? " +
+                    "GROUP by p.observed_date " +
+                    "ORDER BY p.observed_date ASC";
+            
+            ps = conn.prepareStatement(sql);
+            ps.setLong(1, itemId);
+            ps.setString(2, countyFips);
+            ps.setString(3, EXCLUDED_DATE);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String day = rs.getString("day");
+
+                double avgCents = rs.getDouble("avg_cents");
+                int rounded = (int) Math.round(avgCents);
+
+                int storeCount = rs.getInt("store_count");
+
+                DailyAvgPricePoint point = new DailyAvgPricePoint(day, rounded, storeCount);
+                points.add(point);
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+        return points;
+
+    }
+
 }
 

@@ -1,7 +1,8 @@
 import { STYLE_URL, LAYERS } from "./config.js";
 import { uiState, showStates } from "./uiState.js";
-import { fetchStatePricesAndColor, fetchStateStoreCounts } from "./api.js";
+import { fetchNationalTrend, fetchStatePricesAndColor, fetchStateStoreCounts } from "./api.js";
 import { registerMapEvents } from "./events.js";
+import { initTrendChart, updateTrendChart } from "./chart.js";
 
 function setupItemNav(map) {
     const buttons = Array.from(document.querySelectorAll(".itemBtn"));
@@ -39,6 +40,9 @@ function setupItemNav(map) {
 
             await fetchStatePricesAndColor(map, itemId);
             await fetchStateStoreCounts(itemId);
+
+            const nationalTrend = await fetchNationalTrend(itemId);
+            updateTrendChart(window.__trendChart, nationalTrend, "National Average Price ($)");
         });
     }
 }
@@ -66,6 +70,9 @@ export function initMap() {
 
         await fetchStateStoreCounts(uiState.selectedItemId); // fetch state store counts for hover popup
 
+        const nationalTrend = await fetchNationalTrend(uiState.selectedItemId);
+        updateTrendChart(window.__trendChart, nationalTrend, "National Average Price ($)");
+
         registerMapEvents(map); // hover and click handling
       });
 
@@ -76,4 +83,7 @@ export function initMap() {
 document.addEventListener("DOMContentLoaded", () => {
   const map = initMap();
   setupItemNav(map);
+
+  const chart = initTrendChart();
+  window.__trendChart = chart;
 });
