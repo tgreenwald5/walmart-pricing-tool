@@ -9,7 +9,7 @@ export async function fetchStateStoreCounts(itemId) {
         return cache.itemToStateStoreCount[itemId];
     }
 
-    const res = await fetch(`/api/summary/latest/state/store-count?itemId=${itemId}`);
+    const res = await fetch(`/api/summary/latest/state/store-count?itemId=${itemId}`, { cache: "no-store" });
     const stateToStoreCount = await res.json();
 
     cache.itemToStateStoreCount[itemId] = stateToStoreCount; // add state store count to cache
@@ -24,7 +24,7 @@ export async function fetchCountyStoreCounts(itemId, statefp) {
         return cache.itemAndStateToCountyStoreCount[itemId][stateKey];
     }
 
-    const res = await fetch(`/api/summary/latest/county/store-count?itemId=${itemId}&statefp=${stateKey}`);
+    const res = await fetch(`/api/summary/latest/county/store-count?itemId=${itemId}&statefp=${stateKey}`, { cache: "no-store" });
     const countyToStoreCount = await res.json();
     
     if (!cache.itemAndStateToCountyStoreCount[itemId]) {
@@ -43,7 +43,7 @@ export async function fetchStatePricesAndColor(map, itemId) {
         return stateToAvgCents;
     }
 
-    const res = await fetch(`/api/summary/latest/state?itemId=${itemId}`);
+    const res = await fetch(`/api/summary/latest/state?itemId=${itemId}`, { cache: "no-store" });
     const stateToAvgCents = await res.json();
 
     cache.itemToStateAvgCents[itemId] = stateToAvgCents; // add latest state item avg price to cache
@@ -62,7 +62,7 @@ export async function fetchCountyPricesAndColor(map, itemId, statefp) {
         return countyToAvgCents;
     }
 
-    const res = await fetch(`/api/summary/latest/county?itemId=${itemId}&statefp=${stateKey}`);
+    const res = await fetch(`/api/summary/latest/county?itemId=${itemId}&statefp=${stateKey}`, { cache: "no-store" });
     const countyToAvgCents = await res.json();
 
     if (!cache.itemAndStateToCountyAvgCents[itemId]) { // initalize if needed
