@@ -5,10 +5,10 @@ export function initTrendChart() {
       data: {
         labels: [],
         datasets: [{
-          label: "Average Price ($)",
+          //label: "Average Price ($)",
           data: [],
           tension: 0.25,
-          pointRadius: 2,
+          pointRadius: 3,
         }]
       },
 
@@ -19,12 +19,18 @@ export function initTrendChart() {
         scales: {
           y: {
             ticks: {
-              callback: (val) => `$${val}`
+              callback: (val) => `$${Number(val).toFixed(2)}`
             }
           }
         },
 
         plugins: {
+          title: {
+            display: true,
+            font: { size: 16, weight: "bold" },
+            padding: { top: 10, bottom: 10 }
+          },
+
           tooltip: {
             callbacks: {
               afterLabel: (ctx) => {
@@ -38,15 +44,20 @@ export function initTrendChart() {
     });
   }
   
-  export function updateTrendChart(chart, points, title) { // points = [{date, avgCents, storeCount}, ...]
+  export function updateTrendChart(chart, points, scopeLabel, itemName) { // points = [{date, avgCents, storeCount}, ...]
     chart.data.labels = points.map(p => p.date);
     chart.data.datasets[0].data = points.map(p => ({
       x: p.date,
       y: Number(p.avgCents) / 100,
       _meta: { storeCount: p.storeCount }
     }));
-  
-    chart.data.datasets[0].label = title || "Average Price ($)";
+    
+    chart.data.datasets[0].label = "Average Price ($)";
+    chart.options.plugins.title.text = [
+      scopeLabel,
+      `Average Price ($) - ${String(itemName)}`
+
+    ];
     chart.update();
   }
   

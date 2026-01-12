@@ -33,6 +33,8 @@ function setupItemNav(map) {
             }
 
             uiState.selectedItemId = itemId;
+            uiState.selectedItemName = btn.textContent;
+
             setActive(btn);
 
             showStates(map);
@@ -42,7 +44,7 @@ function setupItemNav(map) {
             await fetchStateStoreCounts(itemId);
 
             const nationalTrend = await fetchNationalTrend(itemId);
-            updateTrendChart(window.__trendChart, nationalTrend, "National Average Price ($)");
+            updateTrendChart(window.__trendChart, nationalTrend, "National (All U.S States)", uiState.selectedItemName);
         });
     }
 }
@@ -71,7 +73,7 @@ export function initMap() {
         await fetchStateStoreCounts(uiState.selectedItemId); // fetch state store counts for hover popup
 
         const nationalTrend = await fetchNationalTrend(uiState.selectedItemId);
-        updateTrendChart(window.__trendChart, nationalTrend, "National Average Price ($)");
+        updateTrendChart(window.__trendChart, nationalTrend, "National (All U.S States)", uiState.selectedItemName);
 
         registerMapEvents(map); // hover and click handling
       });

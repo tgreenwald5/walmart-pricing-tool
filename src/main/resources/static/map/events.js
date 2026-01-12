@@ -109,6 +109,8 @@ export function registerMapEvents(map) {
         setLayerVisibility(map, SELECTED_LAYERS.county, false);
         map.setFilter(SELECTED_LAYERS.county, null);
 
+        const stateName = String(feature.properties.NAME);
+
         const stateKey = String(feature.properties.STATEFP).padStart(2, "0");
 
         // show selected state outline
@@ -133,7 +135,7 @@ export function registerMapEvents(map) {
         await fetchCountyStoreCounts(uiState.selectedItemId, stateKey);
 
         const stateTrend = await fetchStateTrend(uiState.selectedItemId, stateKey);
-        updateTrendChart(window.__trendChart, stateTrend, "State Average Price ($)");
+        updateTrendChart(window.__trendChart, stateTrend, stateName, uiState.selectedItemName);
     });
 
     // click on a county to show selected outlines
@@ -143,11 +145,16 @@ export function registerMapEvents(map) {
             return;
         }
 
+        const stateName = String(feature.properties.STATE_NAME);
+        const countyName = String(feature.properties.NAMELSAD);
+        
+
         const countyKey = String(feature.properties.GEOID);
         selectCountyOutline(map, countyKey);
 
         const countyTrend = await fetchCountyTrend(uiState.selectedItemId, countyKey);
-        updateTrendChart(window.__trendChart, countyTrend, "County Average Price ($)");
+        const countyAndState = countyName + ", " + stateName;
+        updateTrendChart(window.__trendChart, countyTrend, countyAndState, uiState.selectedItemName);
     });
 
     map.on("click", async (e) => {
@@ -165,7 +172,7 @@ export function registerMapEvents(map) {
             map.setPaintProperty(LAYERS.states.fill, "fill-opacity", 0.6);
             
             const nationalTrend = await fetchNationalTrend(uiState.selectedItemId);
-            updateTrendChart(window.__trendChart, nationalTrend, "National Average Price ($)");
+            updateTrendChart(window.__trendChart, nationalTrend, "National (All U.S. States)", uiState.selectedItemName);
         }
     });
 }
