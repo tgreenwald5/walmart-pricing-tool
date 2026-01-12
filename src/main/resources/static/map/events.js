@@ -50,7 +50,7 @@ export function registerMapEvents(map, itemId) {
             .setHTML(
             `<div style="font-size:12px">
                 <div><u><b>${stateName}</b></u></div>
-                <div>Latest Average: ${formatCents(avgCents)}</div>
+                <div>Latest Average Price: ${formatCents(avgCents)}</div>
                 <div>Number of Stores With Item: ${formatStoreCount(storeCount)}</div>
             </div>`).addTo(map);
     });
@@ -87,7 +87,7 @@ export function registerMapEvents(map, itemId) {
             .setHTML(
             `<div style="font-size:12px">
                 <div><u><b>${countyName}</b></u></div>
-                <div>Latest Average: ${formatCents(avgCents)}</div>
+                <div>Latest Average Price: ${formatCents(avgCents)}</div>
                 <div>Number of Stores With Item: ${formatStoreCount(storeCount)}</div>
             </div>`
             ).addTo(map);

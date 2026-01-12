@@ -10,12 +10,75 @@
     </head>
 
     <body>
-        <div id="map"></div>
+        <div id="app">
+            <header id="header">
+                <div id="title">Walmart Price Map</div>
+            </header>
+
+            <div id="body">
+                <!-- item nav bar -->
+                <aside id="itemNav">
+                    <div class="navTitle">Items</div>
+
+                    <!-- food -->
+                    <details open class="navGroup">
+                        <summary>Food</summary>
+
+                        <!-- dairy -->
+                        <details open class="navGroup nested">
+                            <summary>Dairy</summary>
+                            <ul class="navList">
+                                <li><button class="itemBtn" data-item-id="44390949">Milk</button></li>
+                                <li><button class="itemBtn" data-item-id="0000000">(dairy placeholder)</button></li>
+                            </ul>
+                        </details>
+
+                        <!-- produce -->
+                        <details open class="navGroup nested">
+                            <summary>Produce</summary>
+                            <ul class="navList">
+                                <li><button class="itemBtn" data-item-id="44390944">Roma Tomato</button></li>
+                                <li><button class="itemBtn" data-item-id="0000000">(produce placeholder)</button></li>
+                            </ul>
+                        </details>
+                    </details>
+
+                    <!-- household -->
+                    <details open class="navGroup">
+                        <summary>Household</summary>
+
+                        <!-- hygiene -->
+                        <details open class="navGroup nested">
+                            <summary>Hygiene</summary>
+                            <ul class="navList">
+                                <li><button class="itemBtn" data-item-id="2311597689">Toilet Paper</button></li>
+                                <li><button class="itemBtn" data-item-id="0000000">(hygiene placeholder)</button></li>
+                            </ul>
+                        </details>
+                    </details>
+
+                </aside>
+
+                <main id="main">
+                    <!-- map -->
+                    <section id="mapSection">
+                        <div id="map"></div>
+                    </section>
+                    
+                     <!-- chart -->
+                    <section id="chartsSection">
+                        <div class="chartsPlaceholder">
+                            (historical chart placeholder)
+                        </div>
+                    </section>
+                </main>
+
+            </div>
+        </div>
 
         <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-
         <script>window.MAPBOX_TOKEN = "pk.eyJ1IjoiZ3JlZW53YWxkdGF5bG9yIiwiYSI6ImNtZTd2ZWkyaTA5MGgya3B2OHAzdzBxOG0ifQ.AjEfZOxrdJlgx61RtCDrUw";</script>
-
         <script type="module" src="/map/index.js"></script>
+
     </body>
 </html>

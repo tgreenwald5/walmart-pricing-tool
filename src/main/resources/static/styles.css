@@ -2,9 +2,124 @@ html, body {
     margin: 0;
     padding: 0;
     height: 100%;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+#app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#header {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.12);
+}
+
+#title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+#body {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+
+/* +++++ item list +++++ */
+#itemNav {
+    width: 320px;
+    border-right: 1px solid rgba(0,0,0,0.12);
+    padding: 12px;
+    overflow: auto;
+}
+
+.navTitle {
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.navGroup {
+    margin-bottom: 8px;
+}
+
+.navGroup summary {
+    cursor: pointer;
+    font-weight: 700;
+    padding: 6px 4px;
+    border-radius: 8px;
+}
+
+.navGroup summary:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.navGroup.nested {
+    margin-left: 10px;
+    margin-top: 6px;
+}
+
+.navList {
+    list-style: none;
+    padding-left: 14px;
+    margin: 6px 0 0 0;
+}
+
+.itemBtn {
+    width:100%;
+    text-align: left;
+    padding: 6px 8px;
+    border: 0;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.itemBtn:hover {
+    background: rgba(0,0,0,0.06);
+}
+
+.itemBtn.active {
+    background: rgba(0,0,0,0.10);
+    font-weight: 700;
+}
+
+/* +++++ map and charts +++++ */
+#main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+#mapSection {
+    flex: 0 0 63vh;
+    min-height: 320px;
+    border-bottom: 1px solid rgba(0,0,0,0.12);
 }
 
 #map {
     width: 100%;
     height: 100%;
+}
+
+#chartsSection {
+    flex: 1;
+    min-height: 0;
+    padding: 12px 16px;
+    overflow: auto;
+}
+
+.chartsPlaceholder {
+    height: 100%;
+    border: 2px solid rgba(0,0,0,0.25);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
 }
