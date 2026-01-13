@@ -2,7 +2,7 @@ html, body {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-family: "Rajdhani", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
 #app {
@@ -76,6 +76,7 @@ html, body {
     border-radius: 8px;
     cursor: pointer;
     font-size: 13px;
+    font-family: inherit;
 }
 
 .itemBtn:hover {

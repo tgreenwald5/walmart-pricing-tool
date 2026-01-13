@@ -5,10 +5,13 @@ export function initTrendChart() {
       data: {
         labels: [],
         datasets: [{
-          //label: "Average Price ($)",
           data: [],
           tension: 0.25,
           pointRadius: 3,
+          borderColor: "#28a155",
+          backgroundColor: "#28a155",
+          borderWidth: 2
+          //fill: false
         }]
       },
 
