@@ -152,12 +152,21 @@
                 <main id="main">
                     <!-- map -->
                     <section id="mapSection">
-                        <div id="map"></div>
+                        <div class="mapPanel">
+                            <div class="mapPanelHeader">
+                                <div id="mapTitle">Latest Average Prices</div>
+                                <div class="mapNote" id="mapHint">Click a state to view county breakdown</div>
+                            </div>
+
+                            <div class="mapPanelBody">
+                                <div id="map"></div>
+                            </div>
+                        </div>
                     </section>
                     
                      <!-- chart -->
                     <section id="chartsSection">
-                        <div class="chartsPlaceholder">
+                        <div class="chartsPanel">
                             <canvas id="trendChart"></canvas>
                         </div>
                     </section>
