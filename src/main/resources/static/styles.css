@@ -158,3 +158,34 @@ html, body {
     align-items: center;
     justify-content: center;
 }
+
+
+/* adjust sizing if mobile */
+@media (max-width: 900px) {
+    #body {
+        flex-direction: column;
+    }
+  
+    #itemNav {
+        width: auto;
+        border-right: none;
+        border-bottom: 1px solid rgba(0,0,0,0.12);
+        max-height: 28vh;
+    }
+  
+    #mapSection {
+        padding: 10px 12px;
+        flex: 0 0 38vh;
+        min-height: 260px;
+    }
+  
+    #chartsSection {
+        flex: 0 0 34vh;
+        min-height: 240px;
+        padding: 10px 12px;
+    }
+
+    .chartsPanel {
+        height: 100%;
+    }
+}
