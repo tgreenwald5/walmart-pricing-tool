@@ -14,14 +14,6 @@ public class WalmartPricingToolApplication {
 
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(WalmartPricingToolApplication.class, args);
-		//ApiPriceImporter.importAllPrices();
-		/*
-		ArrayList<PriceDbOps.DailyAvgPricePoint> points = new ArrayList<>();
-		points = PriceDbOps.getCountyAvgPriceTrend(10450115, "39061");
-		for (PriceDbOps.DailyAvgPricePoint p : points) {
-			System.out.println(p.date + " - " + p.avgCents + " - " + p.storeCount);
-		}
-		*/
 	}
 
 }

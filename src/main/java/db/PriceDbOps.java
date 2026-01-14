@@ -29,7 +29,7 @@ public class PriceDbOps {
             ps.setInt(1, price.storeId);
             ps.setLong(2, price.itemId);
             ps.setInt(3, price.priceCents);
-            ps.setString(4, price.observedDate.toString());
+            ps.setDate(4, java.sql.Date.valueOf(price.observedDate));
 
             ps.executeUpdate();
             //System.out.println("PRICE INSERTED");
@@ -83,6 +83,11 @@ public class PriceDbOps {
             }
         }
         return prices;
+    }
+
+    // convert string to date for postgres
+    private static java.sql.Date toSqlDate(String yyyyMmDd) {
+        return java.sql.Date.valueOf(yyyyMmDd);
     }
 
     // return the latest date prices were collected  at
@@ -176,7 +181,7 @@ public class PriceDbOps {
                     "GROUP BY s.state_fips";
             
             ps = conn.prepareStatement(sql);
-            ps.setString(1, latestDate);
+            ps.setDate(1, toSqlDate(latestDate));
             ps.setLong(2, itemId);
 
             rs = ps.executeQuery();
@@ -227,7 +232,7 @@ public class PriceDbOps {
                     "GROUP BY s.county_fips";
             
             ps = conn.prepareStatement(sql);
-            ps.setString(1, latestDate);
+            ps.setDate(1, toSqlDate(latestDate));
             ps.setLong(2, itemId);
             ps.setString(3, stateFp);
 
@@ -278,7 +283,7 @@ public class PriceDbOps {
                     "GROUP BY s.state_fips";
             
             ps = conn.prepareStatement(sql);
-            ps.setString(1, latestDate);
+            ps.setDate(1, toSqlDate(latestDate));
             ps.setLong(2, itemId);
 
             rs = ps.executeQuery();
@@ -326,7 +331,7 @@ public class PriceDbOps {
                     "GROUP BY s.county_fips";
             
             ps = conn.prepareStatement(sql);
-            ps.setString(1, latestDate);
+            ps.setDate(1, toSqlDate(latestDate));
             ps.setLong(2, itemId);
             ps.setString(3, stateFp);
 
@@ -365,6 +370,8 @@ public class PriceDbOps {
         }
 
     }
+
+
     private static final String EXCLUDED_DATE = "2026-01-06"; // day i didnt collect data from many stores
 
     // get avg price trend of the entire us for an item
@@ -387,7 +394,7 @@ public class PriceDbOps {
             
             ps = conn.prepareStatement(sql);
             ps.setLong(1, itemId);
-            ps.setString(2, EXCLUDED_DATE);
+            ps.setDate(2, toSqlDate(EXCLUDED_DATE));
 
             rs = ps.executeQuery();
 
@@ -439,7 +446,7 @@ public class PriceDbOps {
             ps = conn.prepareStatement(sql);
             ps.setLong(1, itemId);
             ps.setString(2, stateFp);
-            ps.setString(3, EXCLUDED_DATE);
+            ps.setDate(3, toSqlDate(EXCLUDED_DATE));
 
             rs = ps.executeQuery();
 
@@ -492,7 +499,7 @@ public class PriceDbOps {
             ps = conn.prepareStatement(sql);
             ps.setLong(1, itemId);
             ps.setString(2, countyFips);
-            ps.setString(3, EXCLUDED_DATE);
+            ps.setDate(3, toSqlDate(EXCLUDED_DATE));
 
             rs = ps.executeQuery();
 
@@ -523,4 +530,3 @@ public class PriceDbOps {
     }
 
 }
-

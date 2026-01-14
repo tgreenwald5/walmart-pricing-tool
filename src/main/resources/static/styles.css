@@ -123,13 +123,13 @@ html, body {
 
 #mapTitle {
     font-weight: 800;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .mapNote {
     margin-top: 2px;
-    font-size: 12px;
-    opacity: 0.7;
+    font-size: 13px;
+    opacity: 1;
 }
 
 .mapPanelBody {
