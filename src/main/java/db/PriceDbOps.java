@@ -45,6 +45,59 @@ public class PriceDbOps {
         }
     }
 
+    public static void insertPricesBatch(ArrayList<Price> prices) throws Exception {
+        if (prices == null || prices.isEmpty()) {
+            return;
+        }
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = Database.getConnection();
+            String sql = 
+                    "INSERT INTO prices (store_id, item_id, price_cents, observed_date) " +
+                    "VALUES (?, ?, ?, ?) " + 
+                    "ON CONFLICT(store_id, item_id, observed_date) " + // if specific item price in specific store on specific day alrdy exists
+                    "DO UPDATE SET price_cents = excluded.price_cents"; // update row instead of adding new
+                    
+            ps = conn.prepareStatement(sql);
+            conn.setAutoCommit(false);
+
+            int i = 0;
+
+            for (Price price : prices) {
+                ps.setInt(1, price.storeId);
+                ps.setLong(2, price.itemId);
+                ps.setInt(3, price.priceCents);
+                ps.setDate(4, java.sql.Date.valueOf(price.observedDate));
+                ps.addBatch();
+            
+                i += 1;
+                if (i % 1000 == 0) {
+                    ps.executeBatch();
+                    conn.commit();
+                    ps.clearBatch();
+                }
+            }
+
+            ps.executeBatch();
+            conn.commit();
+            ps.clearBatch();
+            //System.out.println("PRICE INSERTED");
+        } finally {
+
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        
+        }
+
+    }
+
     // return all Price objects from db
     public static ArrayList<Price> getAllPrices() throws Exception {
         ArrayList<Price> prices = new ArrayList<>();
@@ -356,6 +409,84 @@ public class PriceDbOps {
         }
         return countyToStoreCount;
     }
+
+    // *** LATEST PRICE BY STORE PRICES IN COUNTY ***
+
+    public static class StoreData {
+        public int storeId;
+        public String city;
+        public double lat;
+        public double lon;
+        public int latestCents;
+        public String observedDate;
+
+        public StoreData(int storeId, String city, double lat, double lon, int latestCents, String observedDate) {
+            this.storeId = storeId;
+            this.city = city;
+            this.lat = lat;
+            this.lon = lon;
+            this.latestCents = latestCents;
+            this.observedDate = observedDate;
+        }
+    }
+
+
+    public static ArrayList<StoreData> getLatestStoreDataByCounty(long itemId, String countyFips) throws Exception {
+        ArrayList<StoreData> storePrices = new ArrayList<>();
+
+        String latestDate = getLatestObservedDateForItem(itemId);
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql = 
+                    "SELECT s.id AS store_id, s.city AS store_city, s.lat AS lat, s.lon AS lon, p.price_cents AS price_cents, p.observed_date AS observed_date " +
+                    "FROM prices p " +
+                    "JOIN stores s ON s.id = p.store_id " +
+                    "WHERE p.observed_date = ? AND p.item_id = ? AND s.county_fips = ? " +
+                    "ORDER BY p.price_cents ASC";
+            
+
+            ps = conn.prepareStatement(sql);
+            ps.setDate(1, toSqlDate(latestDate));
+            ps.setLong(2, itemId);
+            ps.setString(3, countyFips);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int storeId = rs.getInt("store_id");
+                String city = rs.getString("store_city");
+                double lat = rs.getDouble("lat");
+                double lon = rs.getDouble("lon");
+                int priceCents = rs.getInt("price_cents");
+                String observedDate = rs.getString("observed_date");
+
+                StoreData storePrice = new StoreData(storeId, city, lat, lon, priceCents, observedDate);
+                storePrices.add(storePrice);
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+            
+            return storePrices;
+        
+    }
+
+
+    // **** HISTORICAL TRENDS ***
 
     // class for historical price trends
     public static class DailyAvgPricePoint {

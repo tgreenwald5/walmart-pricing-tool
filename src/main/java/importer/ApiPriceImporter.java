@@ -57,9 +57,12 @@ public class ApiPriceImporter {
             Future<?> f = pool.submit(() -> {
                 try {
                     ArrayList<Price> prices = buildPrices(itemIds, storeId); // make price object for each item at a single store
+                    PriceDbOps.insertPricesBatch(prices);
+                    /*
                     for (int j = 0; j < prices.size(); j++) { // loop through price objects
                         PriceDbOps.insertPrice(prices.get(j));
                     }
+                    */
 
                 } catch (RuntimeException e) {
                     System.out.println("API failed at store: " + storeId);
