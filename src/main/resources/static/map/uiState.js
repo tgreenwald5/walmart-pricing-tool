@@ -65,6 +65,7 @@ export async function showCountyStoreMarkers(map, itemId, countyGeoid) {
             type: "Point",
             coordinates: [Number(csd.lon), Number(csd.lat)]
         },
+        
         properties: {
             store_id: csd.storeId,
             city_name: csd.city,

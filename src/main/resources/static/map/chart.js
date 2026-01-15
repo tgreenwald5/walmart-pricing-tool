@@ -4,15 +4,26 @@ export function initTrendChart() {
       type: "line",
       data: {
         labels: [],
-        datasets: [{
-          data: [],
-          tension: 0.25,
-          pointRadius: 3,
-          borderColor: "#28a155",
-          backgroundColor: "#28a155",
-          borderWidth: 2
-          //fill: false
-        }]
+        datasets: [
+          // region selected
+          {
+            data: [],
+            tension: 0.25,
+            pointRadius: 3,
+            borderColor: "#28a155",
+            backgroundColor: "#28a155",
+            borderWidth: 2
+          },
+          // national
+          {
+            data: [],
+            tension: 0.25,
+            pointRadius: 1,
+            borderColor: "#c44d45",
+            backgroundColor: "#c44d45",
+            borderWidth: 2
+          }
+        ]
       },
 
       options: {
@@ -47,15 +58,28 @@ export function initTrendChart() {
     });
   }
   
-  export function updateTrendChart(chart, points, scopeLabel, itemName) { // points = [{date, avgCents, storeCount}, ...]
+  export function updateTrendChart(chart, points, scopeLabel, itemName, nationalPoints = null) { // points = [{date, avgCents, storeCount}, ...]
     chart.data.labels = points.map(p => p.date);
+
     chart.data.datasets[0].data = points.map(p => ({
       x: p.date,
       y: Number(p.avgCents) / 100,
       _meta: { storeCount: p.storeCount }
     }));
-    
     chart.data.datasets[0].label = "Average Price ($)";
+
+    if (nationalPoints) {
+      chart.data.datasets[1].data = nationalPoints.map(p => ({
+        x: p.date,
+        y: Number(p.avgCents) / 100,
+        _meta: { storeCount: p.storeCount }
+      }));
+      chart.data.datasets[1].label = "National Average ($)";
+    } else {
+      chart.data.datasets[1].data = [];
+      chart.data.datasets[1].label = "";
+    }
+
     chart.options.plugins.title.text = [
       scopeLabel,
       `Average Price ($) - ${String(itemName)}`

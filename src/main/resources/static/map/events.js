@@ -164,8 +164,11 @@ export function registerMapEvents(map) {
         await fetchCountyPricesAndColor(map, uiState.selectedItemId, stateKey);
         await fetchCountyStoreCounts(uiState.selectedItemId, stateKey);
 
-        const stateTrend = await fetchStateTrend(uiState.selectedItemId, stateKey);
-        updateTrendChart(window.__trendChart, stateTrend, uiState.selectedStateName, uiState.selectedItemName);
+        const [stateTrend, nationalTrend] = await Promise.all([
+            fetchStateTrend(uiState.selectedItemId, stateKey),
+            fetchNationalTrend(uiState.selectedItemId)
+        ]);
+        updateTrendChart(window.__trendChart, stateTrend, uiState.selectedStateName, uiState.selectedItemName, nationalTrend);
     });
 
     // click on a county to show selected outlines and store markers
@@ -191,9 +194,12 @@ export function registerMapEvents(map) {
 
         showCountyStoreMarkers(map, uiState.selectedItemId, countyKey);
 
-        const countyTrend = await fetchCountyTrend(uiState.selectedItemId, countyKey);
+        const [countyTrend, nationalTrend] = await Promise.all([
+            fetchCountyTrend(uiState.selectedItemId, countyKey),
+            fetchNationalTrend(uiState.selectedItemId)
+        ]);
         const countyAndState = countyName + ", " + uiState.selectedStateName;
-        updateTrendChart(window.__trendChart, countyTrend, countyAndState, uiState.selectedItemName);
+        updateTrendChart(window.__trendChart, countyTrend, countyAndState, uiState.selectedItemName, nationalTrend);
     });
 
     /*
