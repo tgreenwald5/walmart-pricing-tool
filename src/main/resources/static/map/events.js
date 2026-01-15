@@ -1,7 +1,7 @@
-import { LAYERS, SELECTED_LAYERS } from "./config.js";
-import { cache, fetchCountyPricesAndColor, fetchCountyStoreCounts, fetchNationalTrend, fetchCountyTrend, fetchStateTrend } from "./api.js";
+import { LAYERS, SELECTED_LAYERS, STORE_MARKERS_LAYER } from "./config.js";
+import { cache, fetchCountyPricesAndColor, fetchCountyStoreCounts, fetchNationalTrend, fetchCountyTrend, fetchStateTrend, fetchCountyStoreData } from "./api.js";
 import { formatCents, formatStoreCount } from "./colors.js";
-import { uiState, showStates, showCountiesForState, selectStateOutline, selectCountyOutline, setLayerVisibility, clearSelectionOutlines } from "./uiState.js";
+import { uiState, showStates, showCountiesForState, selectStateOutline, selectCountyOutline, setLayerVisibility, clearSelectionOutlines, showCountyStoreMarkers, clearCountyStoreMarkers } from "./uiState.js";
 import { updateTrendChart } from "./chart.js";
 
 
@@ -72,7 +72,7 @@ export function registerMapEvents(map) {
             return;
         }
 
-        // get the clicked countys name and geoid
+        // get the hovered over countys name and geoid
         const countyName = String(feature.properties.NAMELSAD);
         const geoid = String(feature.properties.GEOID);
 
@@ -98,6 +98,36 @@ export function registerMapEvents(map) {
         hoverPopup.remove();
     });
 
+    map.on("mousemove", STORE_MARKERS_LAYER.id , (e) => {
+        const feature = e.features && e.features[0];
+        if (!feature) {
+            return;
+        }
+
+        const cityName = feature.properties.city_name;
+        const latestCents = feature.properties.latest_cents;
+        const storeId = feature.properties.store_id;
+        const observedDate = feature.properties.observed_date
+
+        const storeForm = `${cityName}, ${uiState.selectedStateName} | Store #: ${storeId}`;
+        console.log(observedDate);
+
+        hoverPopup
+            .setLngLat(e.lngLat)
+            .setHTML(
+            `<div style="font-size:12px">
+                <div><u><b>${storeForm}</b></u></div>
+                <div>Latest Price: ${formatCents(latestCents)}</div>
+                <div>Last Updated On: ${observedDate}</div>
+            </div>`
+            ).addTo(map);
+
+    });
+
+    map.on("mouseleave", STORE_MARKERS_LAYER.id, () => {
+        hoverPopup.remove();
+    });
+
     // click on state to show selected lines and zoom into its counties
     map.on("click", LAYERS.states.fill, async (e) => {
         const feature = e.features && e.features[0];
@@ -105,11 +135,11 @@ export function registerMapEvents(map) {
             return;
         }
 
-        // clear any prev county selection
+        // clear any prev county selection lines
         setLayerVisibility(map, SELECTED_LAYERS.county, false);
         map.setFilter(SELECTED_LAYERS.county, null);
 
-        const stateName = String(feature.properties.NAME);
+        uiState.selectedStateName = String(feature.properties.NAME);
 
         const stateKey = String(feature.properties.STATEFP).padStart(2, "0");
 
@@ -135,27 +165,46 @@ export function registerMapEvents(map) {
         await fetchCountyStoreCounts(uiState.selectedItemId, stateKey);
 
         const stateTrend = await fetchStateTrend(uiState.selectedItemId, stateKey);
-        updateTrendChart(window.__trendChart, stateTrend, stateName, uiState.selectedItemName);
+        updateTrendChart(window.__trendChart, stateTrend, uiState.selectedStateName, uiState.selectedItemName);
     });
 
-    // click on a county to show selected outlines
+    // click on a county to show selected outlines and store markers
     map.on("click", LAYERS.counties.fill, async (e) => {
         const feature = e.features && e.features[0];
         if (!feature) {
             return;
         }
 
-        const stateName = String(feature.properties.STATE_NAME);
         const countyName = String(feature.properties.NAMELSAD);
         
-
         const countyKey = String(feature.properties.GEOID);
+        uiState.selectedCountyGeoid = countyKey;
+
         selectCountyOutline(map, countyKey);
 
+        const bounds = getFeatureBounds(feature);
+        map.fitBounds(bounds, {
+            padding: 20,
+            duration: 800,
+            maxZoom: 9
+        });
+
+        showCountyStoreMarkers(map, uiState.selectedItemId, countyKey);
+
         const countyTrend = await fetchCountyTrend(uiState.selectedItemId, countyKey);
-        const countyAndState = countyName + ", " + stateName;
+        const countyAndState = countyName + ", " + uiState.selectedStateName;
         updateTrendChart(window.__trendChart, countyTrend, countyAndState, uiState.selectedItemName);
     });
+
+    /*
+    map.on("click", STORE_MARKERS_LAYER.id, async (e) => {
+        const feature = e.features && e.features[0];
+        if (!feature) {
+            return;
+        }
+
+    })
+    */
 
     map.on("click", async (e) => {
         const hits = map.queryRenderedFeatures(e.point, {
@@ -165,7 +214,11 @@ export function registerMapEvents(map) {
         // go back to all states view on blank space click
         if (hits.length === 0 && uiState.selectedStateFp !== null) {
             hoverPopup.remove();
+
             clearSelectionOutlines(map); // clear selected lines and filters
+
+            clearCountyStoreMarkers(map); // clear county store markers
+
             showStates(map);
 
             // re add state fill opacity

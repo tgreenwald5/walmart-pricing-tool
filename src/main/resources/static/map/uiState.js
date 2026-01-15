@@ -1,6 +1,8 @@
-import { LAYERS, SELECTED_LAYERS } from "./config.js";
+import { fetchCountyStoreData } from "./api.js";
+import { LAYERS, SELECTED_LAYERS, STORE_POINTS_SOURCE } from "./config.js";
 
-export const uiState = { selectedStateFp: null, selectedCountyGeoid: null, selectedItemId: 10450115, selectedItemName: "Milk, 1 Gallon (Great Value)" };
+export const uiState = { selectedStateFp: null, selectedStateName: null, selectedCountyGeoid: null, 
+    selectedItemId: 10450115, selectedItemName: "Milk, 1 Gallon (Great Value)" };
 
 // set layer visibility
 export function setLayerVisibility(map, layerId, visible) {
@@ -25,12 +27,14 @@ export function showStates(map) {
     // clear selected state and county
     uiState.selectedStateFp = null;
     uiState.selectedCountyGeoid = null;
+    uiState.selectedStateName = null;
 
     // clear filters so the selected layers dont stick
     map.setFilter(SELECTED_LAYERS.state, null);
     map.setFilter(SELECTED_LAYERS.county, null);
 }
 
+// show counties but only for selected state
 export function showCountiesForState(map, statefp) {
     const stateKey = String(statefp).padStart(2, "0");
 
@@ -52,6 +56,40 @@ export function showCountiesForState(map, statefp) {
     setLayerVisibility(map, SELECTED_LAYERS.county, false);
 }
 
+// show store markers of a county
+export async function showCountyStoreMarkers(map, itemId, countyGeoid) {
+    const countyStoreData = await fetchCountyStoreData(itemId, countyGeoid);
+    const features = countyStoreData.map(csd => ({
+        type: "Feature",
+        geometry: {
+            type: "Point",
+            coordinates: [Number(csd.lon), Number(csd.lat)]
+        },
+        properties: {
+            store_id: csd.storeId,
+            city_name: csd.city,
+            latest_cents: csd.latestCents,
+            observed_date: csd.observedDate
+        }
+    }));
+
+    const featCollection = { type: "FeatureCollection", features };
+    const src = map.getSource(STORE_POINTS_SOURCE.id);
+    if (src) {
+        src.setData(featCollection);
+    }
+    setLayerVisibility(map, LAYERS.counties.line, true);
+    setLayerVisibility(map, LAYERS.counties.fill, false);
+}
+
+// clear store markers county
+export function clearCountyStoreMarkers(map) {
+    const src = map.getSource(STORE_POINTS_SOURCE.id);
+    if (src) {
+        src.setData({ type: "FeatureCollection", features: [] });
+    }
+}
+
 // show selected state with high opacity lines
 export function selectStateOutline(map, statefp) {
     const stateKey = String(statefp).padStart(2, "0");
@@ -70,6 +108,7 @@ export function selectCountyOutline(map, countyGeoid) {
     setLayerVisibility(map, SELECTED_LAYERS.county, true);
 }
 
+// clear any selected state or county lines
 export function clearSelectionOutlines(map) {
     uiState.selectedStateFp = null;
     uiState.selectedCountyGeoid = null;

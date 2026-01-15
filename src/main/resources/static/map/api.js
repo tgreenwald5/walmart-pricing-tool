@@ -94,6 +94,14 @@ export async function fetchCountyTrend(itemId, countyFips) {
     return await res.json();
 }
 
+// fetch county latest store prices for an item
+export async function fetchCountyStoreData(itemId, countyFips) {
+    const countyKey = String(countyFips).padStart(5, "0");
+    const res = await fetch(`/api/summary/latest/county/store-data?itemId=${itemId}&countyFips=${countyKey}`, { cache: "no-store" });
+    return await res.json();
+}
+
+
 // calc min, median, and max price for state prices, convert them them to colors, and color states
 function colorStates(map, stateToAvgCents) {
     const avgPriceVals = Object.values(stateToAvgCents).map(Number).filter(Number.isFinite); // extract the avg prices from json

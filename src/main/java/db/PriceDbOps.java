@@ -410,7 +410,7 @@ public class PriceDbOps {
         return countyToStoreCount;
     }
 
-    // *** LATEST PRICE BY STORE PRICES IN COUNTY ***
+    // *** LATEST STORE DATA BY COUNTY ***
 
     public static class StoreData {
         public int storeId;
@@ -430,7 +430,7 @@ public class PriceDbOps {
         }
     }
 
-
+    // get county store data like a store's lat and lon for store marker placement
     public static ArrayList<StoreData> getLatestStoreDataByCounty(long itemId, String countyFips) throws Exception {
         ArrayList<StoreData> storePrices = new ArrayList<>();
 
@@ -463,10 +463,10 @@ public class PriceDbOps {
                 String city = rs.getString("store_city");
                 double lat = rs.getDouble("lat");
                 double lon = rs.getDouble("lon");
-                int priceCents = rs.getInt("price_cents");
+                int latestCents = rs.getInt("price_cents");
                 String observedDate = rs.getString("observed_date");
 
-                StoreData storePrice = new StoreData(storeId, city, lat, lon, priceCents, observedDate);
+                StoreData storePrice = new StoreData(storeId, city, lat, lon, latestCents, observedDate);
                 storePrices.add(storePrice);
             }
         } finally {

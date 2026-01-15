@@ -1,4 +1,4 @@
-import { STYLE_URL, LAYERS } from "./config.js";
+import { STYLE_URL, LAYERS, STORE_POINTS_SOURCE, STORE_MARKERS_LAYER } from "./config.js";
 import { uiState, showStates } from "./uiState.js";
 import { fetchNationalTrend, fetchStatePricesAndColor, fetchStateStoreCounts } from "./api.js";
 import { registerMapEvents } from "./events.js";
@@ -74,6 +74,9 @@ export function initMap() {
 
         const nationalTrend = await fetchNationalTrend(uiState.selectedItemId);
         updateTrendChart(window.__trendChart, nationalTrend, "National (All U.S States)", uiState.selectedItemName);
+
+        map.addSource(STORE_POINTS_SOURCE.id, STORE_POINTS_SOURCE.source);
+        map.addLayer(STORE_MARKERS_LAYER);
 
         registerMapEvents(map); // hover and click handling
       });

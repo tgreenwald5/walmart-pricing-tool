@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.ArrayList;
 
 @RestController
 public class SummaryController {
@@ -34,6 +35,11 @@ public class SummaryController {
         return PriceDbOps.getLatestStoreCountByCounty(itemId, statefp);
     }
 
+    // latest store prices by county
+    @GetMapping("/api/summary/latest/county/store-data")
+    public ArrayList<PriceDbOps.StoreData> latestStoreDataByCounty(@RequestParam long itemId, @RequestParam String countyFips) throws Exception {
+        return PriceDbOps.getLatestStoreDataByCounty(itemId, countyFips);
+    }
 
 
 
