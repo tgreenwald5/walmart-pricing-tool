@@ -27,4 +27,10 @@ public class TrendController {
     public ArrayList<PriceDbOps.DailyAvgPricePoint> countyAvgPriceTrend(@RequestParam long itemId, @RequestParam String countyFips) throws Exception {
         return PriceDbOps.getCountyAvgPriceTrend(itemId, countyFips);
     }
+
+    // latest price trend by store for an item
+    @GetMapping("/api/trend/store")
+    public ArrayList<PriceDbOps.DailyAvgPricePoint> storePriceTrend(@RequestParam long itemId, @RequestParam int storeId) throws Exception {
+        return PriceDbOps.getStorePriceTrend(itemId, storeId);
+    }
 }

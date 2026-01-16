@@ -37,9 +37,9 @@ export const STORE_MARKERS_LAYER = {
     source: "store-points",
     paint: {
         "circle-radius": 5,
-        "circle-color": "#ffffff",
+        "circle-color": "#0071ce",
         "circle-stroke-width": 2,
-        "circle-stroke-color": "#111111",
+        "circle-stroke-color": "#0071ce",
         "circle-opacity": 0.95
     }
 };

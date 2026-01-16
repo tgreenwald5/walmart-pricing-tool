@@ -74,6 +74,16 @@ export async function fetchCountyPricesAndColor(map, itemId, statefp) {
     return countyToAvgCents;
 }
 
+// fetch county latest store prices for an item
+export async function fetchCountyStoreData(itemId, countyFips) {
+    const countyKey = String(countyFips).padStart(5, "0");
+    const res = await fetch(`/api/summary/latest/county/store-data?itemId=${itemId}&countyFips=${countyKey}`, { cache: "no-store" });
+    return await res.json();
+}
+
+
+// ***** PRICE TRENDS *****
+
 // fetch nationl avg price trend for an item
 export async function fetchNationalTrend(itemId) {
     const res = await fetch(`/api/trend/national?itemId=${itemId}`, { cache: "no-store" });
@@ -94,10 +104,9 @@ export async function fetchCountyTrend(itemId, countyFips) {
     return await res.json();
 }
 
-// fetch county latest store prices for an item
-export async function fetchCountyStoreData(itemId, countyFips) {
-    const countyKey = String(countyFips).padStart(5, "0");
-    const res = await fetch(`/api/summary/latest/county/store-data?itemId=${itemId}&countyFips=${countyKey}`, { cache: "no-store" });
+// fetch county store price trend for an item
+export async function fetchCountyStoreTrend(itemId, storeId) {
+    const res = await fetch(`/api/trend/store?itemId=${itemId}&storeId=${storeId}`, { cache: "no-store" });
     return await res.json();
 }
 

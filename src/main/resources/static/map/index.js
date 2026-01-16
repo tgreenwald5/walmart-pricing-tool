@@ -77,6 +77,7 @@ export function initMap() {
 
         map.addSource(STORE_POINTS_SOURCE.id, STORE_POINTS_SOURCE.source);
         map.addLayer(STORE_MARKERS_LAYER);
+        map.setPaintProperty(STORE_MARKERS_LAYER.id, "circle-opacity", 0.6);
 
         registerMapEvents(map); // hover and click handling
       });

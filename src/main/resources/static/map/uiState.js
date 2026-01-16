@@ -1,8 +1,15 @@
 import { fetchCountyStoreData } from "./api.js";
-import { LAYERS, SELECTED_LAYERS, STORE_POINTS_SOURCE } from "./config.js";
+import { LAYERS, SELECTED_LAYERS, STORE_MARKERS_LAYER, STORE_POINTS_SOURCE } from "./config.js";
 
-export const uiState = { selectedStateFp: null, selectedStateName: null, selectedCountyGeoid: null, 
-    selectedItemId: 10450115, selectedItemName: "Milk, 1 Gallon (Great Value)" };
+export const uiState = { 
+    selectedStateFp: null, 
+    selectedStateName: null, 
+    selectedCountyGeoid: null, 
+    selectedCityName: null,
+    selectedStoreId: null, 
+    selectedItemId: 10450115, 
+    selectedItemName: "Milk, 1 Gallon (Great Value)" 
+};
 
 // set layer visibility
 export function setLayerVisibility(map, layerId, visible) {
@@ -23,11 +30,16 @@ export function showStates(map) {
     // clear all selected layers
     setLayerVisibility(map, SELECTED_LAYERS.state, false);
     setLayerVisibility(map, SELECTED_LAYERS.county, false);
+    //setLayerVisibility(map, STORE_MARKERS_LAYER, false);
 
     // clear selected state and county
     uiState.selectedStateFp = null;
     uiState.selectedCountyGeoid = null;
     uiState.selectedStateName = null;
+    uiState.selectedCityName = null;
+    uiState.selectedStoreId = null;
+
+    clearCountyStoreMarkers(map);
 
     // clear filters so the selected layers dont stick
     map.setFilter(SELECTED_LAYERS.state, null);

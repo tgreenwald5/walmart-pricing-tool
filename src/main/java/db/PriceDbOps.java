@@ -660,4 +660,51 @@ public class PriceDbOps {
 
     }
 
+    // get price trend of store for an item
+    public static ArrayList<DailyAvgPricePoint> getStorePriceTrend(long itemId, int storeId) throws Exception {
+        ArrayList<DailyAvgPricePoint> points = new ArrayList<>();
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = Database.getConnection();
+
+            String sql =
+                    "SELECT observed_date AS day, price_cents AS latest_cents " +
+                    "FROM prices " +
+                    "WHERE store_id = ? AND item_id = ? AND observed_date <> ? " +
+                    "ORDER BY observed_date ASC";
+            
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, storeId);
+            ps.setLong(2, itemId);
+            ps.setDate(3, toSqlDate(EXCLUDED_DATE));
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String day = rs.getString("day");
+
+                int latestCents = rs.getInt("latest_cents");
+
+                DailyAvgPricePoint point = new DailyAvgPricePoint(day, latestCents, 1);
+                points.add(point);
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+        return points;
+
+    }
+
 }

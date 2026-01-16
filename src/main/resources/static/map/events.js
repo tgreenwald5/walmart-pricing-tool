@@ -1,5 +1,5 @@
 import { LAYERS, SELECTED_LAYERS, STORE_MARKERS_LAYER } from "./config.js";
-import { cache, fetchCountyPricesAndColor, fetchCountyStoreCounts, fetchNationalTrend, fetchCountyTrend, fetchStateTrend, fetchCountyStoreData } from "./api.js";
+import { cache, fetchCountyPricesAndColor, fetchCountyStoreCounts, fetchNationalTrend, fetchCountyTrend, fetchStateTrend, fetchCountyStoreData, fetchCountyStoreTrend } from "./api.js";
 import { formatCents, formatStoreCount } from "./colors.js";
 import { uiState, showStates, showCountiesForState, selectStateOutline, selectCountyOutline, setLayerVisibility, clearSelectionOutlines, showCountyStoreMarkers, clearCountyStoreMarkers } from "./uiState.js";
 import { updateTrendChart } from "./chart.js";
@@ -7,7 +7,8 @@ import { updateTrendChart } from "./chart.js";
 
 // hover popup card, cursor changes, and click zoom
 export function registerMapEvents(map) {
-    // change cursor so states and counties look more clickable
+
+    // states cursor style
     map.on("mouseenter", LAYERS.states.fill, () => {
         map.getCanvas().style.cursor = "pointer";
     });
@@ -15,10 +16,19 @@ export function registerMapEvents(map) {
         map.getCanvas().style.cursor = "";
     });
 
+    // counties cursor style
     map.on("mouseenter", LAYERS.counties.fill, () => {
         map.getCanvas().style.cursor = "pointer";
     });
     map.on("mouseleave", LAYERS.counties.fill, () => {
+        map.getCanvas().style.cursor = "";
+    });
+
+    // store markers cursor style
+    map.on("mouseenter", STORE_MARKERS_LAYER.id, () => {
+        map.getCanvas().style.cursor = "pointer";
+    });
+    map.on("mouseleave", STORE_MARKERS_LAYER.id, () => {
         map.getCanvas().style.cursor = "";
     });
 
@@ -168,6 +178,10 @@ export function registerMapEvents(map) {
             fetchStateTrend(uiState.selectedItemId, stateKey),
             fetchNationalTrend(uiState.selectedItemId)
         ]);
+        if (!stateTrend || stateTrend.length == 0) {
+            updateTrendChart(window.__trendChart, nationalTrend, "National", uiState.selectedItemName, null);
+            return;
+        }
         updateTrendChart(window.__trendChart, stateTrend, uiState.selectedStateName, uiState.selectedItemName, nationalTrend);
     });
 
@@ -198,23 +212,40 @@ export function registerMapEvents(map) {
             fetchCountyTrend(uiState.selectedItemId, countyKey),
             fetchNationalTrend(uiState.selectedItemId)
         ]);
+
+        if (!countyTrend || countyTrend.length == 0) {
+            updateTrendChart(window.__trendChart, nationalTrend, "National", uiState.selectedItemName, null);
+            return;
+        }
+        
         const countyAndState = countyName + ", " + uiState.selectedStateName;
         updateTrendChart(window.__trendChart, countyTrend, countyAndState, uiState.selectedItemName, nationalTrend);
     });
 
-    /*
+    // when a store is clicked on
     map.on("click", STORE_MARKERS_LAYER.id, async (e) => {
         const feature = e.features && e.features[0];
         if (!feature) {
             return;
         }
 
-    })
-    */
+        uiState.selectedCityName = feature.properties.city_name;
+        uiState.selectedStoreId = feature.properties.store_id;
 
+        const [storeTrend, nationalTrend] = await Promise.all([
+            fetchCountyStoreTrend(uiState.selectedItemId, uiState.selectedStoreId),
+            fetchNationalTrend(uiState.selectedItemId)
+        ]);
+        
+        const storeForm = `${uiState.selectedCityName}, ${uiState.selectedStateName} | Store #: ${uiState.selectedStoreId}`;
+        updateTrendChart(window.__trendChart, storeTrend, storeForm, uiState.selectedItemName, nationalTrend);
+
+    });
+
+    // when blank/non active space is clicked
     map.on("click", async (e) => {
         const hits = map.queryRenderedFeatures(e.point, {
-            layers: [LAYERS.states.fill, LAYERS.counties.fill]
+            layers: [LAYERS.states.fill, LAYERS.counties.fill, STORE_MARKERS_LAYER.id]
         });
 
         // go back to all states view on blank space click
