@@ -30,7 +30,7 @@ html, body {
 
 /* +++++ item list +++++ */
 #itemNav {
-    width: 320px;
+    width: clamp(240px, 22vw, 320px);
     border-right: 1px solid rgba(0,0,0,0.12);
     padding: 12px;
     overflow: auto;
@@ -91,19 +91,15 @@ html, body {
 /* +++++ map and charts +++++ */
 #main {
     flex: 1;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: minmax(320px, 2fr) minmax(260px, 1fr);
     min-width: 0;
     min-height: 0;
 }
 
 #mapSection {
-    flex: 0 0 60vh;
-    min-height: 320px;
+    min-height: 0;
     padding: 12px 16px;
-
-    /*border: 2px solid rgba(0,0,0,0.25);*/
-    /*border-radius: 12px;*/
 }
 
 .mapPanel {
@@ -119,7 +115,6 @@ html, body {
     padding: 8px 12px;
     border-bottom: 1px solid rgba(0,0,0,0.15);
     background: rgba(0,0,0,0.03);
-
     display: flex;
     align-items: center;
 }
@@ -151,46 +146,52 @@ html, body {
 }
 
 #chartsSection {
-    flex: 1;
     min-height: 0;
     padding: 12px 16px;
-    overflow: auto;
-    /*border: 2px solid rgba(0,0,0,0.25);*/
-    border-radius: 12px;
+    overflow: hidden;
 }
 
 .chartsPanel {
     height: 100%;
+    min-height: 0;
+    display: flex;
     border: 2px solid rgba(0,0,0,0.25);
     border-radius: 12px;
-    display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.chartsPanel canvas {
+    width: 100%;
+    height: 100%;
+}
+
 .mapLegend {
     margin-left: auto;
+    min-width: 0;
+}
+
+.mapLegend .legendScale {
+    overflow: hidden;
 }
 
 .mapLegend .legendScale ul {
     margin: 0;
     padding: 0;
-    float: left;
     list-style: none;
+    display: flex;
+    flex-wrap: nowrap;
 }
 
 .mapLegend .legendScale ul li {
-    display: block;
-    float: left;
-    width: 50px;
-    /*margin-bottom: 6px;*/
+    flex: 0 0 50px;
     text-align: center;
     font-size: 80%;
-    list-style: none;
+    font-weight: 600;
 }
+
 .mapLegend ul.legendLabels li span {
     display: block;
-    /*float: left;*/
     height: 8px;
     width: 50px;
 }
@@ -199,7 +200,7 @@ html, body {
 
 
 /* adjust sizing if mobile */
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
     #body {
         flex-direction: column;
     }
@@ -210,20 +211,66 @@ html, body {
         border-bottom: 1px solid rgba(0,0,0,0.12);
         max-height: 28vh;
     }
-  
+
+    #main {
+        display: flex;
+        flex-direction: column;
+    }
+
     #mapSection {
         padding: 10px 12px;
-        flex: 0 0 38vh;
-        min-height: 260px;
+        min-height: 320px;
     }
-  
+
+    #mapTitle {
+        font-size: 13px;
+    }
+
+    .mapNote {
+        font-size: 8px;
+    }
+
     #chartsSection {
-        flex: 0 0 34vh;
-        min-height: 240px;
         padding: 10px 12px;
+        min-height: 260px;
     }
 
     .chartsPanel {
         height: 100%;
     }
+
+    .mapLegend .legendScale ul {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
+    .mapLegend .legendScale ul li {
+        flex: 1 1 0;
+        min-width: 10px;
+        font-size: 0;
+        line-height: 1;
+    }
+
+    .mapLegend .legendScale ul li:first-child {
+        font-size: 10px;
+        font-weight: 600;
+        flex: 2.2 1 0;
+    }
+
+    .mapLegend .legendScale ul li:nth-child(6) {
+        font-size: 10px;
+        font-weight: 600;
+        flex: 2.2 1 0;
+    }
+
+    .mapLegend .legendScale ul li:last-child {
+        font-size: 10px;
+        font-weight: 600;
+        flex: 2.2 1 0;
+    }
+
+    .mapLegend ul.legendLabels li span {
+        width: 100%;
+    }
+
 }
