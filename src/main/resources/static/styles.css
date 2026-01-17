@@ -13,7 +13,7 @@ html, body {
 
 #header {
     padding: 14px 16px 12px;
-    border-bottom: 1px solid rgba(0,0,0,0.12);
+    border-bottom: 3px solid rgba(0,0,0,0.15);
 }
 
 #title {
@@ -31,7 +31,7 @@ html, body {
 /* +++++ item list +++++ */
 #itemNav {
     width: clamp(240px, 22vw, 320px);
-    border-right: 1px solid rgba(0,0,0,0.12);
+    border-right: 3px solid rgba(0,0,0,0.15);
     padding: 12px;
     overflow: auto;
 }

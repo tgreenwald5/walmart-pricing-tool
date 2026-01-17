@@ -7,12 +7,12 @@ export function initTrendChart() {
           
           // region selected
           {
-            label: "Average Price ($)",
+            label: "Regional Average ($)",
             data: [],
             tension: 0.25,
             pointRadius: 2,
-            borderColor: "#28a155",
-            backgroundColor: "#28a155",
+            borderColor: "#3457a3",
+            backgroundColor: "#3457a3",
             borderWidth: 2
           },
 
@@ -23,8 +23,9 @@ export function initTrendChart() {
             hidden: true,
             tension: 0.25,
             pointRadius: 2,
-            borderColor: "#c44d45",
-            backgroundColor: "#c44d45",
+            borderColor: "#e3ab4b",
+            backgroundColor: "#e3ab4b",
+            borderDash: [10,5],
             borderWidth: 2
           }
         ]
@@ -72,31 +73,51 @@ export function initTrendChart() {
   }
   
   export function updateTrendChart(chart, points, scopeLabel, itemName, nationalPoints = null) { // points = [{date, avgCents, storeCount}, ...]
-    chart.data.labels = points.map(p => p.date);
+      const region = chart.data.datasets[0];
+      const nat = chart.data.datasets[1];
 
-    chart.data.datasets[0].data = points.map(p => ({
-      x: p.date,
-      y: Number(p.avgCents) / 100,
-      _meta: { storeCount: p.storeCount }
-    }));
-
-    if (nationalPoints) {
-      chart.data.datasets[1].data = nationalPoints.map(p => ({
+      const toXY = (arr) => arr.map(p => ({
         x: p.date,
         y: Number(p.avgCents) / 100,
         _meta: { storeCount: p.storeCount }
       }));
-      chart.data.datasets[1].hidden = false;
-    } else {
-      chart.data.datasets[1].data = [];
-      chart.data.datasets[1].hidden = true;
-    }
 
-    chart.options.plugins.title.text = [
-      scopeLabel,
-      `Average Price ($) - ${String(itemName)}`
+      if (String(scopeLabel).startsWith("National")) {
+        chart.data.labels = points.map(p => p.date);
 
-    ];
-    chart.update();
+        nat.data = toXY(points);
+
+        nat.label = "National Average ($)";
+
+        nat.borderColor = "#e3ab4b";
+        nat.backgroundColor = "#e3ab4b";
+
+        nat.hidden = false;
+
+        region.data = [];
+        region.hidden = true;
+        region.label = "";
+
+      } else {
+        chart.data.labels = points.map(p => p.date);
+        
+        region.data = toXY(points);
+        region.hidden = false;
+        region.label = "Regional Average ($)";
+
+        if (nationalPoints) {
+          nat.data = toXY(nationalPoints);
+
+          nat.label = "National Average ($)";
+
+          nat.borderColor = "#e3ab4b";
+          nat.backgroundColor = "#e3ab4b";
+
+          nat.hidden = false;
+        }
+      }
+
+      chart.options.plugins.title.text = [scopeLabel, `Average Price ($) - ${String(itemName)}`];
+      chart.update();
   }
   
