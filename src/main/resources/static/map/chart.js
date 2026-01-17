@@ -3,10 +3,11 @@ export function initTrendChart() {
     return new Chart(ctx, {
       type: "line",
       data: {
-        labels: [],
         datasets: [
+          
           // region selected
           {
+            label: "Average Price ($)",
             data: [],
             tension: 0.25,
             pointRadius: 3,
@@ -14,9 +15,12 @@ export function initTrendChart() {
             backgroundColor: "#28a155",
             borderWidth: 2
           },
+
           // national
           {
+            label: "National Average ($)",
             data: [],
+            hidden: true,
             tension: 0.25,
             pointRadius: 1,
             borderColor: "#c44d45",
@@ -39,6 +43,15 @@ export function initTrendChart() {
         },
 
         plugins: {
+          legend: {
+            labels: {
+              filter: (legendItem, data) => {
+                const dSet = data.datasets[legendItem.datasetIndex];
+                return !dSet.hidden && !!dSet.label;
+              }
+            }
+          },
+
           title: {
             display: true,
             font: { size: 16, weight: "bold" },
@@ -66,7 +79,6 @@ export function initTrendChart() {
       y: Number(p.avgCents) / 100,
       _meta: { storeCount: p.storeCount }
     }));
-    chart.data.datasets[0].label = "Average Price ($)";
 
     if (nationalPoints) {
       chart.data.datasets[1].data = nationalPoints.map(p => ({
@@ -74,10 +86,10 @@ export function initTrendChart() {
         y: Number(p.avgCents) / 100,
         _meta: { storeCount: p.storeCount }
       }));
-      chart.data.datasets[1].label = "National Average ($)";
+      chart.data.datasets[1].hidden = false;
     } else {
       chart.data.datasets[1].data = [];
-      chart.data.datasets[1].label = "";
+      chart.data.datasets[1].hidden = true;
     }
 
     chart.options.plugins.title.text = [

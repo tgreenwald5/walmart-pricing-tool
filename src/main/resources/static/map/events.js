@@ -203,7 +203,7 @@ export function registerMapEvents(map) {
         map.fitBounds(bounds, {
             padding: 20,
             duration: 800,
-            maxZoom: 9
+            maxZoom: 7
         });
 
         showCountyStoreMarkers(map, uiState.selectedItemId, countyKey);
@@ -217,7 +217,7 @@ export function registerMapEvents(map) {
             updateTrendChart(window.__trendChart, nationalTrend, "National", uiState.selectedItemName, null);
             return;
         }
-        
+
         const countyAndState = countyName + ", " + uiState.selectedStateName;
         updateTrendChart(window.__trendChart, countyTrend, countyAndState, uiState.selectedItemName, nationalTrend);
     });

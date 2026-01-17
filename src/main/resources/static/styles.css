@@ -119,6 +119,14 @@ html, body {
     padding: 8px 12px;
     border-bottom: 1px solid rgba(0,0,0,0.15);
     background: rgba(0,0,0,0.03);
+
+    display: flex;
+    align-items: center;
+}
+
+.mapHeaderText {
+    display: flex;
+    flex-direction: column;
 }
 
 #mapTitle {
@@ -159,6 +167,35 @@ html, body {
     align-items: center;
     justify-content: center;
 }
+
+.mapLegend {
+    margin-left: auto;
+}
+
+.mapLegend .legendScale ul {
+    margin: 0;
+    padding: 0;
+    float: left;
+    list-style: none;
+}
+
+.mapLegend .legendScale ul li {
+    display: block;
+    float: left;
+    width: 50px;
+    /*margin-bottom: 6px;*/
+    text-align: center;
+    font-size: 80%;
+    list-style: none;
+}
+.mapLegend ul.legendLabels li span {
+    display: block;
+    /*float: left;*/
+    height: 8px;
+    width: 50px;
+}
+
+
 
 
 /* adjust sizing if mobile */
