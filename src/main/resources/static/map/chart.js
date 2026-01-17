@@ -10,7 +10,7 @@ export function initTrendChart() {
             label: "Average Price ($)",
             data: [],
             tension: 0.25,
-            pointRadius: 3,
+            pointRadius: 2,
             borderColor: "#28a155",
             backgroundColor: "#28a155",
             borderWidth: 2
@@ -22,7 +22,7 @@ export function initTrendChart() {
             data: [],
             hidden: true,
             tension: 0.25,
-            pointRadius: 1,
+            pointRadius: 2,
             borderColor: "#c44d45",
             backgroundColor: "#c44d45",
             borderWidth: 2
