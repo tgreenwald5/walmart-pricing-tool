@@ -114,4 +114,4 @@ aggregated into state and county level averages and visualized with interactive 
 - Look into precomputing regional aggregates and whether it will save a meaningful amount of resources
 - Expand tracked item list
 - Improve UI, especially on mobile
-- Fix x axis label overcrowding 
+- ~~Fix x axis label overcrowding~~ 
