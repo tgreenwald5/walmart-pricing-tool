@@ -1,3 +1,12 @@
+// make sure date sticks to correct "yyyy-mm-dd" and doesnt shift hours around
+function formatLocalDate(dateStr) {
+    const d  = String(dateStr).slice(0, 10);
+    const [yr, mnth, day] = d.split("-").map(Number);
+    const localDate = new Date(yr, mnth - 1, day);
+    return localDate
+}
+
+
 export function initTrendChart() {
     const ctx = document.getElementById("trendChart");
     return new Chart(ctx, {
@@ -36,6 +45,20 @@ export function initTrendChart() {
         maintainAspectRatio: false,
         parsing: false,
         scales: {
+          x: {
+            type: "time",
+            time: {
+              unit: "day",
+              tooltipFormat: "MMM d, yyyy"
+            },
+            ticks: {
+              autoSkip: true,
+              maxTicksLimit: 6,
+              maxRotation: 30,
+              minRotation: 30
+            }
+          },
+
           y: {
             ticks: {
               callback: (val) => `$${Number(val).toFixed(2)}`
@@ -77,7 +100,7 @@ export function initTrendChart() {
       const nat = chart.data.datasets[1];
 
       const toXY = (arr) => arr.map(p => ({
-        x: p.date,
+        x: formatLocalDate(p.date),
         y: Number(p.avgCents) / 100,
         _meta: { storeCount: p.storeCount }
       }));

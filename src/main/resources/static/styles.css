@@ -84,8 +84,9 @@ html, body {
 }
 
 .itemBtn.active {
-    background: rgba(0,0,0,0.10);
+    background: #FEFCE8;
     font-weight: 700;
+    border: 2px solid #2c2c2e;
 }
 
 /* +++++ map and charts +++++ */
@@ -133,6 +134,9 @@ html, body {
     margin-top: 2px;
     font-size: 13px;
     opacity: 1;
+    font-weight: 600;
+    font-style: italic;
+    text-decoration: underline;
 }
 
 .mapPanelBody {
